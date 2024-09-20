@@ -2,18 +2,18 @@
 global using System.Numerics;
 using static Raylib_cs.Raylib;
 
-var ship_v = new Vector3(0f,0f,Solve.OrbitVelocity(2f, 1000f)*1.5f);
+float PLANET_MASS = 1000f;
+var ship_v = new Vector3(0f,0f,Solve.OrbitVelocity(2f, PLANET_MASS));
 var ship_p = new Vector3(2f,0f,0f);
-var orbit = Solve.OrbitFor(ship_p,ship_v,1000f);
+var orbit = Solve.OrbitFor(ship_p,ship_v,PLANET_MASS);
 var points = Solve.OrbitCartesianPoints(orbit,100).ToArray();
 
 // See https://aka.ms/new-console-template for more information
 
-InitWindow(800, 480, "Hello World");
-
+InitWindow(2000, 2000, "sim");
 // Define the camera to look into our 3d world (position, target, up vector)
 Camera3D camera = new Camera3D();
-camera.Position = new Vector3(0.0f, 2.0f, 4.0f);    // Camera position
+camera.Position = new Vector3(0.0f, 2.0f, -10.0f);    // Camera position
 camera.Target = new Vector3(0f, 0f, 0f);      // Camera looking at point
 camera.Up = new Vector3(0.0f, 1.0f, 0.0f);          // Camera up vector (rotation towards target)
 camera.FovY = 60.0f;                                // Camera field-of-view Y
@@ -26,6 +26,7 @@ while (!WindowShouldClose())
     ClearBackground(Color.Black);
     BeginMode3D(camera);
     DrawSphere(new Vector3(0f, 0f, 0f), 1, Color.Blue);
+    DrawCube(ship_p,.1f,.1f,.1f,Color.Magenta);
     DrawOrbitPoints(points);
     EndMode3D();
     EndDrawing();

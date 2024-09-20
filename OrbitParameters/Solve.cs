@@ -36,10 +36,10 @@ public static class Solve
         {
             orbitType = OrbitType.Hyperbolic;
         }
-        float semiMajorAxis = orbitType == OrbitType.Elliptical 
-            ?-mu / (2 * orbitalEnergy) 
+        float semiMajorAxis = orbitType == OrbitType.Elliptical
+            ? -mu / (2 * orbitalEnergy)
             //PeA
-            :mu / (2 * MathF.Abs(orbitalEnergy));
+            : mu / (2 * MathF.Abs(orbitalEnergy));
         // Calculate inclination
         float inclination = MathF.Acos(h.Z / hMagnitude);
         // Calculate longitude of the ascending node
@@ -93,7 +93,7 @@ public static class Solve
     public static IEnumerable<Vector3> OrbitCartesianPoints(OrbitParameters p, int points)
     {
         List<Vector3> coordinates = new List<Vector3>();
-        
+
         // Pre-compute the rotation matrix components
         float cosInclination = MathF.Cos(p.Inclination);
         float sinInclination = MathF.Sin(p.Inclination);
@@ -101,9 +101,7 @@ public static class Solve
         float sinLongitudeOfAscendingNode = MathF.Sin(p.LongitudeOfAscendingNode);
         float cosArgumentOfPeriapsis = MathF.Cos(p.ArgumentOfPeriapsis);
         float sinArgumentOfPeriapsis = MathF.Sin(p.ArgumentOfPeriapsis);
-        if (float.IsNaN(cosArgumentOfPeriapsis)) cosArgumentOfPeriapsis = 1f;
-        if (float.IsNaN(sinArgumentOfPeriapsis)) sinArgumentOfPeriapsis = 1f;
-              // Define the range for the true anomaly for hyperbolic orbits, e.g., from -π/2 to π/2 radians
+        // Define the range for the true anomaly for hyperbolic orbits, e.g., from -π/2 to π/2 radians
         float startAnomaly = 0f;
         float endAnomaly = MathF.PI * 2;
         if (p.Type == OrbitType.Hyperbolic)
@@ -132,6 +130,29 @@ public static class Solve
             // Add the point to the list
             yield return new Vector3((float)xInertial, (float)yInertial, (float)zInertial);
         }
+    }
+
+    public static (Vector3 position, Vector3 velocity) ApplyGravity(Vector3 position, Vector3 velocity, float planetMass, float stepTimeSeconds)
+    {
+        float massOfObject = 1.0f; // Assuming a unit mass for the object since mass cancels out in F = ma for gravitational calculations.
+
+        // Calculate the gravitational force
+        float distance = position.Length();
+        float forceMagnitude = G * planetMass * massOfObject / (distance * distance);
+
+        // Compute the direction of the force
+        Vector3 forceDirection = Vector3.Normalize(-position);
+
+        // Calculate the acceleration (Newton's Second Law: F = ma -> a = F / m)
+        Vector3 acceleration = forceDirection * forceMagnitude / massOfObject;
+
+        // Update velocity based on acceleration (v = u + at)
+        Vector3 newVelocity = velocity + acceleration * stepTimeSeconds;
+
+        // Update position based on new velocity (s = ut + 0.5at^2 can be simplified in this step-wise approach to s = s + vt)
+        Vector3 newPosition = position + newVelocity * stepTimeSeconds;
+
+        return (newPosition, newVelocity);
     }
 }
 
