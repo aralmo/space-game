@@ -98,11 +98,21 @@ public static class Solve
         float sinLongitudeOfAscendingNode = MathF.Sin(p.LongitudeOfAscendingNode);
         float cosArgumentOfPeriapsis = MathF.Cos(p.ArgumentOfPeriapsis);
         float sinArgumentOfPeriapsis = MathF.Sin(p.ArgumentOfPeriapsis);
-
+        if (float.IsNaN(cosArgumentOfPeriapsis)) cosArgumentOfPeriapsis = 1f;
+        if (float.IsNaN(sinArgumentOfPeriapsis)) sinArgumentOfPeriapsis = 1f;
+              // Define the range for the true anomaly for hyperbolic orbits, e.g., from -π/2 to π/2 radians
+        float startAnomaly = 0f;
+        float endAnomaly = MathF.PI * 2;
+        if (p.Type == OrbitType.Hyperbolic)
+        {
+            // Use a higher sampling range for hyperbolic orbits to capture more of the trajectory
+            startAnomaly = 0f; // Adjust according to desired segment
+            endAnomaly = MathF.PI * 4f; // Adjust according to desired segment
+        }
         // Loop through the points
         for (int i = 0; i < points; i++)
         {
-            float trueAnomaly = 2 * MathF.PI * i / points;
+            float trueAnomaly = trueAnomaly = startAnomaly + (endAnomaly - startAnomaly) * i / points;
 
             // Calculate the radius in the orbital plane
             float radius = p.SemiMajorAxis * (1 - p.Eccentricity * p.Eccentricity) / (1 + p.Eccentricity * MathF.Cos(trueAnomaly));
