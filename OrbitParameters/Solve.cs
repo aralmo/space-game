@@ -36,7 +36,10 @@ public static class Solve
         {
             orbitType = OrbitType.Hyperbolic;
         }
-        float semiMajorAxis = orbitType == OrbitType.Elliptical ? -mu / (2 * orbitalEnergy) : float.PositiveInfinity;
+        float semiMajorAxis = orbitType == OrbitType.Elliptical 
+            ?-mu / (2 * orbitalEnergy) 
+            //PeA
+            :mu / (2 * MathF.Abs(orbitalEnergy));
         // Calculate inclination
         float inclination = MathF.Acos(h.Z / hMagnitude);
         // Calculate longitude of the ascending node
@@ -106,8 +109,8 @@ public static class Solve
         if (p.Type == OrbitType.Hyperbolic)
         {
             // Use a higher sampling range for hyperbolic orbits to capture more of the trajectory
-            startAnomaly = 0f; // Adjust according to desired segment
-            endAnomaly = MathF.PI * 4f; // Adjust according to desired segment
+            startAnomaly = -MathF.PI; // Adjust according to desired segment
+            endAnomaly = MathF.PI; // Adjust according to desired segment
         }
         // Loop through the points
         for (int i = 0; i < points; i++)
@@ -131,3 +134,4 @@ public static class Solve
         }
     }
 }
+

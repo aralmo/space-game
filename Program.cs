@@ -2,7 +2,7 @@
 global using System.Numerics;
 using static Raylib_cs.Raylib;
 
-var ship_v = new Vector3(0f,0f,Solve.OrbitVelocity(2f, 1000f));
+var ship_v = new Vector3(0f,0f,Solve.OrbitVelocity(2f, 1000f)*1.5f);
 var ship_p = new Vector3(2f,0f,0f);
 var orbit = Solve.OrbitFor(ship_p,ship_v,1000f);
 var points = Solve.OrbitCartesianPoints(orbit,100).ToArray();
