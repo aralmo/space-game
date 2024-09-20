@@ -121,12 +121,24 @@ public static class Solve
             float xOrbital = radius * MathF.Cos(trueAnomaly);
             float yOrbital = radius * MathF.Sin(trueAnomaly);
             // Transform the coordinates to the inertial frame
-            float xInertial = (cosLongitudeOfAscendingNode * cosArgumentOfPeriapsis - sinLongitudeOfAscendingNode * sinArgumentOfPeriapsis * cosInclination) * xOrbital +
-                               (-cosLongitudeOfAscendingNode * sinArgumentOfPeriapsis - sinLongitudeOfAscendingNode * cosArgumentOfPeriapsis * cosInclination) * yOrbital;
-            float yInertial = (sinLongitudeOfAscendingNode * cosArgumentOfPeriapsis + cosLongitudeOfAscendingNode * sinArgumentOfPeriapsis * cosInclination) * xOrbital +
-                               (-sinLongitudeOfAscendingNode * sinArgumentOfPeriapsis + cosLongitudeOfAscendingNode * cosArgumentOfPeriapsis * cosInclination) * yOrbital;
-            float zInertial = sinArgumentOfPeriapsis * sinInclination * xOrbital +
-                               cosArgumentOfPeriapsis * sinInclination * yOrbital;
+            float xInertial, yInertial, zInertial;
+            if (p.Eccentricity == 0f)
+            {
+                xInertial = xOrbital * cosLongitudeOfAscendingNode -
+                            yOrbital * sinLongitudeOfAscendingNode * cosInclination;
+                yInertial = xOrbital * sinLongitudeOfAscendingNode +
+                            yOrbital * cosLongitudeOfAscendingNode * cosInclination;
+                zInertial = yOrbital * sinInclination;
+            }
+            else
+            {
+                xInertial = (cosLongitudeOfAscendingNode * cosArgumentOfPeriapsis - sinLongitudeOfAscendingNode * sinArgumentOfPeriapsis * cosInclination) * xOrbital +
+                                   (-cosLongitudeOfAscendingNode * sinArgumentOfPeriapsis - sinLongitudeOfAscendingNode * cosArgumentOfPeriapsis * cosInclination) * yOrbital;
+                yInertial = (sinLongitudeOfAscendingNode * cosArgumentOfPeriapsis + cosLongitudeOfAscendingNode * sinArgumentOfPeriapsis * cosInclination) * xOrbital +
+                                   (-sinLongitudeOfAscendingNode * sinArgumentOfPeriapsis + cosLongitudeOfAscendingNode * cosArgumentOfPeriapsis * cosInclination) * yOrbital;
+                zInertial = sinArgumentOfPeriapsis * sinInclination * xOrbital +
+                                   cosArgumentOfPeriapsis * sinInclination * yOrbital;
+            }
             // Add the point to the list
             yield return new Vector3((float)xInertial, (float)yInertial, (float)zInertial);
         }
