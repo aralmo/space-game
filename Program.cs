@@ -2,8 +2,6 @@
 global using System.Numerics;
 using static Raylib_cs.Raylib;
 using static Drawing;
-using static Model;
-using System.Runtime.CompilerServices;
 internal class Program
 {
     private static unsafe void Main(string[] args)
@@ -25,12 +23,12 @@ internal class Program
         var orbit = Solve.KeplarOrbit(ship_p, ship_v, PLANET_MASS);
         var points = Solve.OrbitPoints(orbit, 100).ToArray();
 
-
-        var icos = LoadModelFromMesh(GenMeshCustom(IcosphereGenerator.GenerateIcosphere(2).ToArray()));
-        var texture = LoadTextureFromImage(GenImageCellular(512, 512, 100));
-        var material = LoadMaterialDefault();
-        SetMaterialTexture(ref material, MaterialMapIndex.Diffuse, texture);
-        icos.Materials[0] = material;
+        var icosphere = LoadModelFromMesh(Procedural.GenMeshCustom(IcosphereGenerator.GenerateIcosphere(1)));
+        var text = LoadTextureFromImage(GenImageCellular(1024,512,100));
+        // var mat = LoadMaterialDefault();
+        // SetMaterialTexture(ref mat, MaterialMapIndex.Diffuse, text);
+        icosphere.Materials[0].Maps[0].Texture = text;
+        float rot = 0f;
         while (!WindowShouldClose())
         {
             var delta_time = (float)(lastFrame - DateTime.UtcNow).TotalSeconds;
@@ -40,8 +38,8 @@ internal class Program
             BeginDrawing();
             ClearBackground(Color.Black);
             BeginMode3D(camera);
+            DrawModelEx(icosphere, Vector3.Zero, new Vector3(0f,1f,0f),rot+=.01f, new Vector3(1f,1f,1f), Color.White);
             //DrawSphere(new Vector3(0f, 0f, 0f), 1, Color.Blue);
-            DrawModel(icos, Vector3.Zero, 1f, Color.White);
             DrawCube(ship_p, .1f, .1f, .1f, Color.Magenta);
             DrawLineOfPoints(points);
             EndMode3D();
