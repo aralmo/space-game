@@ -2,7 +2,7 @@ using static Constants;
 
 public static class Solve
 {
-    public static OrbitParameters OrbitFor(Vector3 position, Vector3 velocity, float bodyMass, DateTime date = default)
+    public static OrbitParameters KeplarOrbit(Vector3 position, Vector3 velocity, float bodyMass, DateTime date = default)
     {
         if (date == default) date = DateTime.UtcNow;
         float mu = G * bodyMass;
@@ -90,7 +90,7 @@ public static class Solve
         float velocity = MathF.Sqrt(G * planetMass / radius);
         return (float)velocity;
     }
-    public static IEnumerable<Vector3> OrbitCartesianPoints(OrbitParameters p, int points)
+    public static IEnumerable<Vector3> OrbitPoints(OrbitParameters p, int points)
     {
         List<Vector3> coordinates = new List<Vector3>();
 
