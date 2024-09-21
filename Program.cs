@@ -38,14 +38,33 @@ internal class Program
             BeginDrawing();
             ClearBackground(Color.Black);
             BeginMode3D(camera);
-            DrawModelEx(icosphere, Vector3.Zero, new Vector3(0f,1f,0f),rot+=.01f, new Vector3(1f,1f,1f), Color.White);
-            //DrawSphere(new Vector3(0f, 0f, 0f), 1, Color.Blue);
+            //DrawModelEx(icosphere, Vector3.Zero, new Vector3(0f,1f,0f),rot+=.01f, new Vector3(1f,1f,1f), Color.White);
+            DrawSphere(new Vector3(0f, 0f, 0f), 1, Color.Blue);
             DrawCube(ship_p, .1f, .1f, .1f, Color.Magenta);
             DrawLineOfPoints(points);
             EndMode3D();
+            WriteParameters(orbit);
             EndDrawing();
         }
 
         CloseWindow();
     }
+
+    static unsafe void WriteParameters(OrbitParameters p)
+    {
+        var y = 5;
+        foreach(var par in p.Parameters())
+        {
+            DrawText(par.par, 10, y, 20, Color.White);
+            DrawText(par.value.ToString(), 100, y, 20, Color.White);
+            y+= 30;
+        }
+    }
+
+    static unsafe void DrawHyperbolicOrbit()
+    {
+
+    }
+
+
 }

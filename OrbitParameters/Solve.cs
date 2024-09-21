@@ -107,13 +107,13 @@ public static class Solve
         if (p.Type == OrbitType.Hyperbolic)
         {
             // Use a higher sampling range for hyperbolic orbits to capture more of the trajectory
-            startAnomaly = -MathF.PI; // Adjust according to desired segment
-            endAnomaly = MathF.PI; // Adjust according to desired segment
+            startAnomaly =1f- -MathF.PI /2f; // Adjust according to desired segment
+            endAnomaly =1f- MathF.PI /2f; // Adjust according to desired segment
         }
         // Loop through the points
         for (int i = 0; i < points; i++)
         {
-            float trueAnomaly = trueAnomaly = startAnomaly + (endAnomaly - startAnomaly) * i / points;
+            float trueAnomaly = startAnomaly + (endAnomaly - startAnomaly) * i / points;
 
             // Calculate the radius in the orbital plane
             float radius = p.SemiMajorAxis * (1 - p.Eccentricity * p.Eccentricity) / (1 + p.Eccentricity * MathF.Cos(trueAnomaly));
