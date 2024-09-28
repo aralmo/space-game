@@ -101,7 +101,7 @@ public static class Solve
         float meanAnomaly = trueAnomaly - eccentricity * MathF.Sin(trueAnomaly);
         float timeOfPeriapsisPassage = meanAnomaly / MathF.Sqrt(mu / MathF.Pow(semiMajorAxis, 3));
         // For hyperbolic orbits, calculate the asymptote direction
-        Vector3 asymptoteDirection = orbitType == OrbitType.Hyperbolic ? eVector.Normalized() : Vector3.Zero;
+        Vector3 asymptoteDirection = orbitType == OrbitType.Hyperbolic ? eVector.Normalize() : Vector3.Zero;
         var orbitalPeriod = 2 * MathF.PI * MathF.Sqrt(MathF.Pow(semiMajorAxis, 3) / mu);
         return new OrbitParameters
         {

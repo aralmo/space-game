@@ -8,7 +8,7 @@ public static class Vector3Extensions
     }
 
     // Method to return the normalized vector
-    public static Vector3 Normalized(this Vector3 v)
+    public static Vector3 Normalize(this Vector3 v)
     {
         float magnitude = v.Magnitude();
         if (magnitude > 1e-5f) // Adding a small threshold to avoid division by zero
