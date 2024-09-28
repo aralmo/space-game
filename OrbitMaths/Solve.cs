@@ -143,7 +143,50 @@ public static class Solve
             yield return new Vector3((float)xInertial, (float)yInertial, (float)zInertial);
         }
     }
+    public static Vector3 PositionAtTime(this OrbitParameters parameters, DateTime time)
+    {
+        // Calculate the mean anomaly at the given time
+        float meanMotion = MathF.Sqrt(parameters.GravitationalParameter / MathF.Pow(parameters.SemiMajorAxis, 3));
+        float timeSincePeriapsis = parameters.TimeOfPeriapsisPassage - (float)(time - parameters.EpochTime).TotalSeconds;
+        float meanAnomaly = parameters.MeanAnomaly + meanMotion * timeSincePeriapsis;
 
+        // Solve Kepler's equation to get the eccentric anomaly
+        float eccentricAnomaly = meanAnomaly;
+        for (int i = 0; i < 10; i++) // Iterate to solve Kepler's equation
+        {
+            eccentricAnomaly = meanAnomaly + parameters.Eccentricity * MathF.Sin(eccentricAnomaly);
+        }
+
+        // Calculate the true anomaly from the eccentric anomaly
+        float trueAnomaly = 2 * MathF.Atan2(
+            MathF.Sqrt(1 + parameters.Eccentricity) * MathF.Sin(eccentricAnomaly / 2),
+            MathF.Sqrt(1 - parameters.Eccentricity) * MathF.Cos(eccentricAnomaly / 2)
+        );
+
+        // Calculate the radius in the orbital plane
+        float radius = parameters.SemiMajorAxis * (1 - parameters.Eccentricity * MathF.Cos(eccentricAnomaly));
+
+        // Position in the orbital plane
+        float xOrbital = radius * MathF.Cos(trueAnomaly);
+        float yOrbital = radius * MathF.Sin(trueAnomaly);
+
+        // Transform the coordinates to the inertial frame
+        float cosInclination = MathF.Cos(parameters.Inclination);
+        float sinInclination = MathF.Sin(parameters.Inclination);
+        float cosLongitudeOfAscendingNode = MathF.Cos(parameters.LongitudeOfAscendingNode);
+        float sinLongitudeOfAscendingNode = MathF.Sin(parameters.LongitudeOfAscendingNode);
+        float cosArgumentOfPeriapsis = MathF.Cos(parameters.ArgumentOfPeriapsis);
+        float sinArgumentOfPeriapsis = MathF.Sin(parameters.ArgumentOfPeriapsis);
+
+        float xInertial = (cosLongitudeOfAscendingNode * cosArgumentOfPeriapsis - sinLongitudeOfAscendingNode * sinArgumentOfPeriapsis * cosInclination) * xOrbital +
+                          (-cosLongitudeOfAscendingNode * sinArgumentOfPeriapsis - sinLongitudeOfAscendingNode * cosArgumentOfPeriapsis * cosInclination) * yOrbital;
+        float yInertial = (sinLongitudeOfAscendingNode * cosArgumentOfPeriapsis + cosLongitudeOfAscendingNode * sinArgumentOfPeriapsis * cosInclination) * xOrbital +
+                          (-sinLongitudeOfAscendingNode * sinArgumentOfPeriapsis + cosLongitudeOfAscendingNode * cosArgumentOfPeriapsis * cosInclination) * yOrbital;
+        float zInertial = sinArgumentOfPeriapsis * sinInclination * xOrbital +
+                          cosArgumentOfPeriapsis * sinInclination * yOrbital;
+
+        return new Vector3(xInertial, yInertial, zInertial);
+    }
     public static (Vector3 position, Vector3 velocity) ApplyGravity(Vector3 position, Vector3 velocity, float planetMass, float stepTimeSeconds)
     {
         float massOfObject = 1.0f; // Assuming a unit mass for the object since mass cancels out in F = ma for gravitational calculations.
