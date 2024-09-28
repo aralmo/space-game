@@ -1,7 +1,42 @@
+using System.Security.Cryptography.X509Certificates;
 using static Constants;
 
 public static class Solve
 {
+    public static OrbitParameters CircularOrbit(float distance, float bodymass, DateTime date)
+    {
+        var startPos = new Vector3(distance, 0f,0f);
+        var vel = new Vector3(0f,0f,OrbitVelocity(distance, bodymass));
+        return KeplarOrbit(startPos, vel,bodymass, date);
+    }
+    public static OrbitParameters EllipticalOrbit(float semiMajorAxis, float eccentricity, float centralBodyMass, float argumentOfPeriapsis = 0f, float inclination = 0f)
+    {
+        float mu = G * centralBodyMass;
+        float longitudeOfAscendingNodeRad = MathF.Acos(MathF.Cos(inclination));
+        float argumentOfPeriapsisRad = argumentOfPeriapsis == 0f? MathF.Acos(MathF.Cos(longitudeOfAscendingNodeRad) * MathF.Cos(inclination)) : argumentOfPeriapsis;
+        float trueAnomalyRad = MathF.Acos(MathF.Cos(argumentOfPeriapsisRad) * MathF.Cos(longitudeOfAscendingNodeRad) * MathF.Cos(inclination));
+        float meanAnomaly = trueAnomalyRad - eccentricity * MathF.Sin(trueAnomalyRad);
+        float timeOfPeriapsisPassage = meanAnomaly / MathF.Sqrt(mu / MathF.Pow(semiMajorAxis, 3));
+        Vector3 asymptoteDirection = eccentricity > 1 ? new Vector3(1, 0, 0) : Vector3.Zero;
+        var orbitalPeriod = 2 * MathF.PI * MathF.Sqrt(MathF.Pow(semiMajorAxis, 3) / mu);
+        return new OrbitParameters
+        {
+            Type = OrbitType.Elliptical,
+            T = NaNFix(orbitalPeriod),
+            SemiMajorAxis = NaNFix(semiMajorAxis),
+            Eccentricity = NaNFix(eccentricity),
+            Inclination = NaNFix(inclination),
+            LongitudeOfAscendingNode = NaNFix(longitudeOfAscendingNodeRad),
+            ArgumentOfPeriapsis = NaNFix(argumentOfPeriapsisRad),
+            TrueAnomaly = NaNFix(trueAnomalyRad),
+            MeanAnomaly = NaNFix(meanAnomaly),
+            TimeOfPeriapsisPassage = NaNFix(timeOfPeriapsisPassage),
+            GravitationalParameter = NaNFix(mu),
+            EpochTime = DateTime.UtcNow,
+            AsymptoteDirection = new Vector3(NaNFix(asymptoteDirection.X), NaNFix(asymptoteDirection.Y), NaNFix(asymptoteDirection.Z))
+        };
+    }
+
     public static OrbitParameters KeplarOrbit(Vector3 position, Vector3 velocity, float bodyMass, DateTime date = default)
     {
         if (date == default) date = DateTime.UtcNow;
@@ -71,20 +106,21 @@ public static class Solve
         return new OrbitParameters
         {
             Type = orbitType,
-            T = orbitalPeriod,
-            SemiMajorAxis = semiMajorAxis,
-            Eccentricity = eccentricity,
-            Inclination = inclination,
-            LongitudeOfAscendingNode = longitudeOfAscendingNode,
-            ArgumentOfPeriapsis = argumentOfPeriapsis,
-            TrueAnomaly = trueAnomaly,
-            MeanAnomaly = meanAnomaly,
-            TimeOfPeriapsisPassage = timeOfPeriapsisPassage,
-            GravitationalParameter = mu,
+            T = NaNFix(orbitalPeriod),
+            SemiMajorAxis = NaNFix(semiMajorAxis),
+            Eccentricity = NaNFix(eccentricity),
+            Inclination = NaNFix(inclination),
+            LongitudeOfAscendingNode = NaNFix(longitudeOfAscendingNode),
+            ArgumentOfPeriapsis = NaNFix(argumentOfPeriapsis),
+            TrueAnomaly = NaNFix(trueAnomaly),
+            MeanAnomaly = NaNFix(meanAnomaly),
+            TimeOfPeriapsisPassage = NaNFix(timeOfPeriapsisPassage),
+            GravitationalParameter = NaNFix(mu),
             EpochTime = date,
-            AsymptoteDirection = asymptoteDirection
+            AsymptoteDirection = new Vector3(NaNFix(asymptoteDirection.X), NaNFix(asymptoteDirection.Y), NaNFix(asymptoteDirection.Z))
         };
     }
+    static float NaNFix(float v) => float.IsNaN(v) ? 0f : v;
     public static float OrbitVelocity(float radius, float planetMass)
     {
         float velocity = MathF.Sqrt(G * planetMass / radius);
