@@ -58,6 +58,7 @@ public class CelestialBody
     #endregion
 
     #region Visuals
+    public string Name {get;private set;}
     public double Size { get; private set; } = 1f;
     public Model? Model { get; private set; }
     public Color FarColor {get; private set;}
@@ -66,6 +67,12 @@ public class CelestialBody
         this.Model = model;
         this.Size = size;
         this.FarColor = farColor ?? Color.LightGray;
+        return this;
+    }
+
+    public CelestialBody WithInfo(string name)
+    {
+        this.Name = name;
         return this;
     }
     #endregion

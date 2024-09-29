@@ -5,15 +5,15 @@ public static class Solve
 {
     public static OrbitParameters CircularOrbit(double distance, double bodymass, DateTime date)
     {
-        var startPos = new Vector3D(distance, 0f,0f);
-        var vel = new Vector3D(0f,0f,OrbitVelocity(distance, bodymass));
-        return KeplarOrbit(startPos, vel,bodymass, date);
+        var startPos = new Vector3D(distance, 0f, 0f);
+        var vel = new Vector3D(0f, 0f, OrbitVelocity(distance, bodymass));
+        return KeplarOrbit(startPos, vel, bodymass, date);
     }
     public static OrbitParameters EllipticalOrbit(double semiMajorAxis, double eccentricity, double centralBodyMass, double argumentOfPeriapsis = 0f, double inclination = 0f)
     {
         double mu = G * centralBodyMass;
         double longitudeOfAscendingNodeRad = Math.Acos(Math.Cos(inclination));
-        double argumentOfPeriapsisRad = argumentOfPeriapsis == 0f? Math.Acos(Math.Cos(longitudeOfAscendingNodeRad) * Math.Cos(inclination)) : argumentOfPeriapsis;
+        double argumentOfPeriapsisRad = argumentOfPeriapsis == 0f ? Math.Acos(Math.Cos(longitudeOfAscendingNodeRad) * Math.Cos(inclination)) : argumentOfPeriapsis;
         double trueAnomalyRad = Math.Acos(Math.Cos(argumentOfPeriapsisRad) * Math.Cos(longitudeOfAscendingNodeRad) * Math.Cos(inclination));
         double meanAnomaly = trueAnomalyRad - eccentricity * Math.Sin(trueAnomalyRad);
         double timeOfPeriapsisPassage = meanAnomaly / Math.Sqrt(mu / Math.Pow(semiMajorAxis, 3));
@@ -120,6 +120,10 @@ public static class Solve
             AsymptoteDirection = new Vector3D(NaNFix(asymptoteDirection.X), NaNFix(asymptoteDirection.Y), NaNFix(asymptoteDirection.Z))
         };
     }
+    public static Vector3D VelocityAtTime(this OrbitParameters parameters, DateTime time)
+    {
+        return parameters.PositionAtTime(time.AddSeconds(1d)) - parameters.PositionAtTime(time);
+    }
     static double NaNFix(double v) => double.IsNaN(v) ? 0f : v;
     public static double OrbitVelocity(double radius, double planetMass)
     {
@@ -143,8 +147,8 @@ public static class Solve
         if (p.Type == OrbitType.Hyperbolic)
         {
             // Use a higher sampling range for hyperbolic orbits to capture more of the trajectory
-            startAnomaly =1f- -Math.PI /2f; // Adjust according to desired segment
-            endAnomaly =1f- Math.PI /2f; // Adjust according to desired segment
+            startAnomaly = 1f - -Math.PI / 2f; // Adjust according to desired segment
+            endAnomaly = 1f - Math.PI / 2f; // Adjust according to desired segment
         }
         // Loop through the points
         for (int i = 0; i < points; i++)
@@ -223,16 +227,17 @@ public static class Solve
 
         return new Vector3D(xInertial, yInertial, zInertial);
     }
-    public static (Vector3D position, Vector3D velocity) ApplyGravity(Vector3D position, Vector3D velocity, double planetMass, double stepTimeSeconds)
+    public static (Vector3D position, Vector3D velocity) ApplyGravity(Vector3D position, Vector3D velocity, Vector3D planetPosition, double planetMass, double stepTimeSeconds)
     {
         double massOfObject = 1.0f; // Assuming a unit mass for the object since mass cancels out in F = ma for gravitational calculations.
 
         // Calculate the gravitational force
-        double distance = position.Length();
+        Vector3D relativePosition = position - planetPosition;
+        double distance = relativePosition.Length();
         double forceMagnitude = G * planetMass * massOfObject / (distance * distance);
 
         // Compute the direction of the force
-        Vector3D forceDirection = (position * -1).Normalize();
+        Vector3D forceDirection = relativePosition.Normalize() * -1;
 
         // Calculate the acceleration (Newton's Second Law: F = ma -> a = F / m)
         Vector3D acceleration = forceDirection * forceMagnitude / massOfObject;
