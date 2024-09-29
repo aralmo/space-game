@@ -13,7 +13,7 @@ internal class Program
         camera.Up = new Vector3(0.0f, 1.0f, 0.0f);
         camera.FovY = 60.0f;
         camera.Projection = CameraProjection.Perspective;
-        
+        //Rlgl.SetClipPlanes(0.1f,10000f);
         SetTargetFPS(60);
         DateTime lastFrame = DateTime.UtcNow;
         float cameraDistance = 10.0f;
@@ -22,12 +22,12 @@ internal class Program
         var simulation = new Simulation();
         
         var sun = CelestialBody
-            .Create(Vector3.Zero, 3000000f)
-            .WithModelVisuals(model: null, size: 80f);
+            .Create(Vector3.Zero, 30000f)
+            .WithModelVisuals(model: null, size: 10f);
 
         var planet = CelestialBody
-            .Create(centralBody: sun, radius: 1000f, mass: 90f, eccentricity: 0.05f)
-            .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.EarthLike, 1), size: 4f);
+            .Create(centralBody: sun, radius: 200f, mass: 90f, eccentricity: 0.05f)
+            .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.EarthLike, 1), size: 2f);
 
         simulation
             .AddCelestialBody(sun)
