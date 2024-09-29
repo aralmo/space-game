@@ -49,7 +49,7 @@ public class CelestialBody
         => new CelestialBody(time => parameters.PositionAtTime(time) + centralBody.GetPosition(time), mass)
         {
             OrbitPoints = (parameters.Type == OrbitType.Elliptical)
-                ? Solve.OrbitPoints(parameters, 100).ToArray() 
+                ? Solve.OrbitPoints(parameters,  (int) parameters.SemiMajorAxis*2).ToArray() 
                 : null,
 
             OrbitParameters = parameters,

@@ -25,11 +25,14 @@ public static class Drawing
     {
         foreach (var (a, b) in GetLines(camera, points, true))
         {
-            DrawLine((int)a.X, (int)a.Y, (int)b.X, (int)b.Y, color.HasValue?color.Value:Color.DarkGray);
+            DrawLine((int)a.X, (int)a.Y, (int)b.X, (int)b.Y, color.HasValue ? color.Value : Color.DarkGray);
+           // DrawCircle((int)a.X, (int)a.Y, 1, color.HasValue ? color.Value : Color.Green);
         }
     }
     public static IEnumerable<(Vector2 a, Vector2 b)> GetLines(Camera3D camera, Vector3[] points, bool closed)
     {
+        var sw = GetScreenWidth();
+        var sh = GetScreenHeight();
         for (int i = 0; i < points.Length - 1; i++)
         {
             var a = points[i];
@@ -38,11 +41,18 @@ public static class Drawing
             {
                 b = points[0];
             }
-            if (!IsBehindCamera(camera, a) || !IsBehindCamera(camera, b))
+            var ibca = IsBehindCamera(camera, a);
+            var ibcb = IsBehindCamera(camera, b);
+            if (!ibca || !ibcb)
             {
                 var screenA = GetWorldToScreen(a, camera);
                 var screenB = GetWorldToScreen(b, camera);
-                yield return (screenA, screenB);
+                if (ibcb) screenB = new Vector2(1f-screenB.X, 1f-screenB.Y);
+                if (ibca) screenB = new Vector2(1f-screenA.X, 1f-screenA.Y);
+                if ((screenA.X > 0 && screenA.X < sw && screenA.Y > 0 && screenA.Y < sh) || (screenB.X > 0 && screenB.X < sw && screenB.Y > 0 && screenB.Y < sh))
+                {
+                    yield return (screenA, screenB);
+                }
             }
         }
     }
