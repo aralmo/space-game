@@ -60,10 +60,12 @@ public class CelestialBody
     #region Visuals
     public float Size { get; private set; } = 1f;
     public Model? Model { get; private set; }
-    public CelestialBody WithModelVisuals(Model? model, float size)
+    public Color FarColor {get; private set;}
+    public CelestialBody WithModelVisuals(Model? model, float size, Color? farColor = null)
     {
         this.Model = model;
         this.Size = size;
+        this.FarColor = farColor ?? Color.LightGray;
         return this;
     }
     #endregion
