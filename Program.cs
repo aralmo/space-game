@@ -49,24 +49,10 @@ internal class Program
             lastFrame = DateTime.UtcNow;
             UpdateCamera(ref camera, ref cameraAngle, ref cameraDistance, delta_time);
             BeginDrawing();
-            ClearBackground(Color.Black);
-            var t = (simulation.SimulationTime - DateTime.UnixEpoch).TotalSeconds*.2f % (Math.PI*2);
-            DrawText($"{t}",10,10,10,Color.White);
-            for (int i = 0; i < backgroundStars.Count; i++)
-            {
-                Vector3 star = backgroundStars[i];
-                var pos = GetWorldToScreen(star, camera);
-                if (pos.X < 0 || pos.X > GetScreenWidth() || pos.Y < 0 || pos.Y > GetScreenHeight())
-                {
-                    continue;
-                }
-                var s = 1f;
-                float blinkFactor = MathF.Sin((float)t+i) * 1f + 1f;
-                s *= blinkFactor;
-                DrawCircle((int)pos.X,(int)pos.Y,MathF.Max(1f, s),Color.White);
-            }
+            DrawBackground(camera, backgroundStars, simulation);
+            simulation.DrawOrbits2D(camera);
             BeginMode3D(camera);
-            simulation.Draw(drawOrbits: true);
+            simulation.Draw();
             //Draw3DGrid(200, 5f);
             EndMode3D();
             //DrawEdit(ref orb);
@@ -74,6 +60,25 @@ internal class Program
         }
 
         CloseWindow();
+    }
+
+    private static unsafe void DrawBackground(Camera3D camera, List<Vector3> backgroundStars, Simulation simulation)
+    {
+        ClearBackground(Color.Black);
+        var t = (simulation.SimulationTime - DateTime.UnixEpoch).TotalSeconds * .2f % (Math.PI * 2);
+        for (int i = 0; i < backgroundStars.Count; i++)
+        {
+            Vector3 star = backgroundStars[i];
+            var pos = GetWorldToScreen(star, camera);
+            if (pos.X < 0 || pos.X > GetScreenWidth() || pos.Y < 0 || pos.Y > GetScreenHeight())
+            {
+                continue;
+            }
+            var s = 1f;
+            float blinkFactor = MathF.Sin((float)t + i) * 1f + 1f;
+            s *= blinkFactor;
+            DrawCircle((int)pos.X, (int)pos.Y, MathF.Max(1f, s), Color.White);
+        }
     }
 
     static List<Vector3> GenerateStarPositions(int numberOfStars, float radius)
