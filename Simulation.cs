@@ -2,12 +2,13 @@ public class Simulation
 {
     public DateTime SimulationTime { get; set; } = default;
     List<CelestialBody> celestialBodies = new List<CelestialBody>();
+    public IEnumerable<CelestialBody> CelestialBodies => celestialBodies;
     public Simulation AddCelestialBody(CelestialBody body)
     {
         celestialBodies.Add(body);
         return this;
     }
-    
+ 
     //todo: everything below this point should go to a SimulationVisuals of some kind
 
     public void Draw(Camera3D camera)
@@ -34,7 +35,7 @@ public class Simulation
                 var screenPosition = GetWorldToScreen(position, camera);
                 if (screenPosition.X >= 0 && screenPosition.X <= GetScreenWidth() && screenPosition.Y >= 0 && screenPosition.Y <= GetScreenHeight())
                 {
-                    double sizeFactor = 1000 / distance; // Adjust size based on distance
+                    double sizeFactor = 1000 / distance;
                     float drawSize =(float) Math.Max(1f, body.Size * sizeFactor);
                     DrawCircle((int) double.Round(screenPosition.X), (int)double.Round(screenPosition.Y), drawSize, body.FarColor);
                 }
@@ -45,9 +46,10 @@ public class Simulation
     {
         foreach (var body in celestialBodies)
         {
-            if ((centerBody == null || centerBody.Equals(body.CentralBody)) && body.OrbitPoints != null && body.CentralBody != null)
+            if (centerBody == null || centerBody.Equals(body.CentralBody))
             {
-                Drawing.Draw2DLineOfPoints(camera, body.OrbitPoints.Select(p => p+ body.CentralBody.GetPosition(SimulationTime)).ToArray());
+                var color = (centerBody != null && centerBody.CentralBody == body)?Color.Gray:Color.DarkGray;
+                Drawing.Draw2DLineOfPoints(camera, body.OrbitPoints!.Select(p => p+ body.CentralBody!.GetPosition(SimulationTime)).ToArray(),color);
             }
         }
     }
