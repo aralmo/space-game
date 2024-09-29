@@ -49,23 +49,6 @@ public static class SetTarget
             var opoints  = Solve.OrbitPoints(orbit,100).ToArray();
             var camera = orbitingCamera.GetCamera();
             BeginDrawing();
-            foreach (var body in simulation.CelestialBodies)
-            {
-                var bodyPosition = body.GetPosition(simulation.SimulationTime);
-                var screenPos = GetWorldToScreen(bodyPosition, camera);
-                var distance = Vector3.Distance(spaceship_pos, bodyPosition);
-                var influence = G * body.Mass / (distance * distance);
-
-               (_, spaceship_vel) = Solve.ApplyGravity(
-                    position: spaceship_pos,
-                    velocity: spaceship_vel,
-                    planetPosition: body.GetPosition(simulation.SimulationTime),
-                    planetMass: body.Mass,
-                    stepTimeSeconds: delta_time);
-
-                DrawText($"{body.Name}: {influence:F4}", (int)screenPos.X, (int)screenPos.Y, 20, Color.White);
-            }
-
             spaceship_pos += spaceship_vel * delta_time;
 
             DrawBackground(camera, backgroundStars, simulation);
@@ -90,7 +73,22 @@ public static class SetTarget
             DrawLine3D(spaceship_pos, spaceshipEndPos, Color.Green);
             EndMode3D();
 
+            foreach (var body in simulation.CelestialBodies)
+            {
+                var bodyPosition = body.GetPosition(simulation.SimulationTime);
+                var screenPos = GetWorldToScreen(bodyPosition, camera);
+                var distance = Vector3.Distance(spaceship_pos, bodyPosition);
+                var influence = G * body.Mass / (distance * distance);
 
+               (_, spaceship_vel) = Solve.ApplyGravity(
+                    position: spaceship_pos,
+                    velocity: spaceship_vel,
+                    planetPosition: body.GetPosition(simulation.SimulationTime),
+                    planetMass: body.Mass,
+                    stepTimeSeconds: delta_time);
+
+                DrawText($"{body.Name}: {influence:F4}", (int)screenPos.X, (int)screenPos.Y, 20, Color.White);
+            }
             //DrawEdit(ref orb);
             EndDrawing();
         }
