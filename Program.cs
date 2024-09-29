@@ -13,25 +13,34 @@ internal class Program
         camera.Up = new Vector3(0.0f, 1.0f, 0.0f);
         camera.FovY = 60.0f;
         camera.Projection = CameraProjection.Perspective;
+        
         SetTargetFPS(60);
         DateTime lastFrame = DateTime.UtcNow;
         float cameraDistance = 10.0f;
         float cameraAngle = 0.0f;
         var backgroundStars = GenerateStarPositions(1000, 10000f);
         var simulation = new Simulation();
-        var planet = CelestialBody.Create(Vector3.Zero, 900f);
+        
+        var sun = CelestialBody
+            .Create(Vector3.Zero, 3000000f)
+            .WithModelVisuals(model: null, size: 80f);
+
+        var planet = CelestialBody
+            .Create(centralBody: sun, radius: 1000f, mass: 90f, eccentricity: 0.05f)
+            .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.EarthLike, 1), size: 4f);
+
         simulation
-            .AddCelestialBody(planet
-                .WithVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.EarthLike, 1), size: 4f))
+            .AddCelestialBody(sun)
+            .AddCelestialBody(planet)
             .AddCelestialBody(CelestialBody
                 .Create(centralBody: planet, radius: 41f, mass: 90f, eccentricity: 0.12f, inclination: 1.67f, argumentOfPeriapsis: 1f)
-                .WithVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.Moon, 2), size: 1f))
+                .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.Moon, 2), size: 1f))
             .AddCelestialBody(CelestialBody
                 .Create(centralBody: planet, radius: 76f, mass: 65f, eccentricity: 0.23f, inclination: 1.73f, argumentOfPeriapsis: 2.3f)
-                .WithVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.Moon, 3), size: 0.7f))
+                .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.Moon, 3), size: 0.7f))
             .AddCelestialBody(CelestialBody
                 .Create(centralBody: planet, radius: 126f, mass: 44f, eccentricity: -0.17f, inclination: 0.23f, argumentOfPeriapsis: 4.2f)
-                .WithVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.IcePlanet, 4), size: 0.9f));
+                .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.IcePlanet, 4), size: 0.9f));
 
         while (!WindowShouldClose())
         {
@@ -57,7 +66,7 @@ internal class Program
                 DrawCircle((int)pos.X,(int)pos.Y,MathF.Max(1f, s),Color.White);
             }
             BeginMode3D(camera);
-            simulation.Draw(true);
+            simulation.Draw(drawOrbits: true);
             //Draw3DGrid(200, 5f);
             EndMode3D();
             //DrawEdit(ref orb);

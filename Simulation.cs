@@ -1,6 +1,6 @@
 public class Simulation
 {
-    public DateTime SimulationTime {get;set;} = default;
+    public DateTime SimulationTime { get; set; } = default;
     List<CelestialBody> celestialBodies = new List<CelestialBody>();
     public Simulation AddCelestialBody(CelestialBody body)
     {
@@ -8,7 +8,7 @@ public class Simulation
         return this;
     }
 
-    public void Draw(bool drawOrbit = false)
+    public void Draw(bool drawOrbits = false)
     {
         foreach (var body in celestialBodies)
         {
@@ -20,9 +20,10 @@ public class Simulation
             {
                 DrawSphere(body.GetPosition(SimulationTime), body.Size, Color.White);
             }
-            if (drawOrbit && body.OrbitPoints != null)
+
+            if (drawOrbits && body.OrbitPoints != null && body.CentralBody != null)
             {
-                DrawLineOfPoints(body.OrbitPoints!, Color.Gray);
+                DrawLineOfPoints(body.OrbitPoints!.Select(p => p + body.CentralBody.GetPosition(SimulationTime)), Color.Gray);
             }
         }
     }

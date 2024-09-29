@@ -7,11 +7,14 @@ public class CelestialBody
     public Vector3 GetPosition(DateTime time) => positionF(time);
     public float GravitationalParameter { get => G * Mass; }
     public Vector3[]? OrbitPoints {get; private set;}
+    public OrbitParameters? OrbitParameters {get;private set;}
+    public CelestialBody? CentralBody {get; private set;}
     private CelestialBody(Func<DateTime, Vector3> positionF, float mass)
     {
         this.positionF = positionF;
         Mass = mass;
     }
+
     /// <summary>
     /// Creates a new celestial body on a circular orbit around central body with radius' SemiMajorAxis
     /// </summary>
@@ -47,16 +50,21 @@ public class CelestialBody
         {
             OrbitPoints = (parameters.Type == OrbitType.Elliptical)
                 ? Solve.OrbitPoints(parameters, 100).ToArray() 
-                : null
+                : null,
+
+            OrbitParameters = parameters,
+            CentralBody = centralBody
         };
     #endregion
 
+    #region Visuals
     public float Size { get; private set; } = 1f;
     public Model? Model { get; private set; }
-    public CelestialBody WithVisuals(Model model, float size)
+    public CelestialBody WithModelVisuals(Model? model, float size)
     {
         this.Model = model;
         this.Size = size;
         return this;
     }
+    #endregion
 }
