@@ -45,17 +45,17 @@ public class OrbitingCamera
 
         // Update camera position based on angle and distance
         var targetPosition = Target.GetPosition(simulationTime);
-        camera.Position.X = targetPosition.X + MathF.Sin(cameraAngle) * cameraDistance;
-        camera.Position.Z = targetPosition.Z + MathF.Cos(cameraAngle) * cameraDistance;
+        camera.Position.X =(float) (targetPosition.X + Math.Sin(cameraAngle) * cameraDistance);
+        camera.Position.Z =(float) (targetPosition.Z + Math.Cos(cameraAngle) * cameraDistance);
 
         // Adjust camera Y position based on zoom level
         if (cameraDistance > 10.0f) // Threshold for zooming out
         {
-            camera.Position.Y = targetPosition.Y + cameraDistance - 10.0f; // Move camera up as it zooms out
+            camera.Position.Y =(float) (targetPosition.Y + cameraDistance - 10.0f); // Move camera up as it zooms out
         }
         else
         {
-            camera.Position.Y = targetPosition.Y + 2.0f; // Default Y position
+            camera.Position.Y =(float) (targetPosition.Y + 2.0f); // Default Y position
         }
 
         camera.Target = targetPosition;

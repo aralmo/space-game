@@ -13,7 +13,7 @@ internal class Program
 
         var simulation = new Simulation();        
         var sun = CelestialBody
-            .Create(Vector3.Zero, 3000000f)
+            .Create(Vector3D.Zero, 3000000f)
             .WithModelVisuals(model: null, size: 60f, Color.Yellow);
 
         var planet = CelestialBody

@@ -3,22 +3,22 @@ using static Constants;
 
 public static class Solve
 {
-    public static OrbitParameters CircularOrbit(float distance, float bodymass, DateTime date)
+    public static OrbitParameters CircularOrbit(double distance, double bodymass, DateTime date)
     {
-        var startPos = new Vector3(distance, 0f,0f);
-        var vel = new Vector3(0f,0f,OrbitVelocity(distance, bodymass));
+        var startPos = new Vector3D(distance, 0f,0f);
+        var vel = new Vector3D(0f,0f,OrbitVelocity(distance, bodymass));
         return KeplarOrbit(startPos, vel,bodymass, date);
     }
-    public static OrbitParameters EllipticalOrbit(float semiMajorAxis, float eccentricity, float centralBodyMass, float argumentOfPeriapsis = 0f, float inclination = 0f)
+    public static OrbitParameters EllipticalOrbit(double semiMajorAxis, double eccentricity, double centralBodyMass, double argumentOfPeriapsis = 0f, double inclination = 0f)
     {
-        float mu = G * centralBodyMass;
-        float longitudeOfAscendingNodeRad = MathF.Acos(MathF.Cos(inclination));
-        float argumentOfPeriapsisRad = argumentOfPeriapsis == 0f? MathF.Acos(MathF.Cos(longitudeOfAscendingNodeRad) * MathF.Cos(inclination)) : argumentOfPeriapsis;
-        float trueAnomalyRad = MathF.Acos(MathF.Cos(argumentOfPeriapsisRad) * MathF.Cos(longitudeOfAscendingNodeRad) * MathF.Cos(inclination));
-        float meanAnomaly = trueAnomalyRad - eccentricity * MathF.Sin(trueAnomalyRad);
-        float timeOfPeriapsisPassage = meanAnomaly / MathF.Sqrt(mu / MathF.Pow(semiMajorAxis, 3));
-        Vector3 asymptoteDirection = eccentricity > 1 ? new Vector3(1, 0, 0) : Vector3.Zero;
-        var orbitalPeriod = 2 * MathF.PI * MathF.Sqrt(MathF.Pow(semiMajorAxis, 3) / mu);
+        double mu = G * centralBodyMass;
+        double longitudeOfAscendingNodeRad = Math.Acos(Math.Cos(inclination));
+        double argumentOfPeriapsisRad = argumentOfPeriapsis == 0f? Math.Acos(Math.Cos(longitudeOfAscendingNodeRad) * Math.Cos(inclination)) : argumentOfPeriapsis;
+        double trueAnomalyRad = Math.Acos(Math.Cos(argumentOfPeriapsisRad) * Math.Cos(longitudeOfAscendingNodeRad) * Math.Cos(inclination));
+        double meanAnomaly = trueAnomalyRad - eccentricity * Math.Sin(trueAnomalyRad);
+        double timeOfPeriapsisPassage = meanAnomaly / Math.Sqrt(mu / Math.Pow(semiMajorAxis, 3));
+        Vector3D asymptoteDirection = eccentricity > 1 ? new Vector3D(1, 0, 0) : Vector3D.Zero;
+        var orbitalPeriod = 2 * Math.PI * Math.Sqrt(Math.Pow(semiMajorAxis, 3) / mu);
         return new OrbitParameters
         {
             Type = OrbitType.Elliptical,
@@ -33,29 +33,29 @@ public static class Solve
             TimeOfPeriapsisPassage = NaNFix(timeOfPeriapsisPassage),
             GravitationalParameter = NaNFix(mu),
             EpochTime = DateTime.UtcNow,
-            AsymptoteDirection = new Vector3(NaNFix(asymptoteDirection.X), NaNFix(asymptoteDirection.Y), NaNFix(asymptoteDirection.Z))
+            AsymptoteDirection = new Vector3D(NaNFix(asymptoteDirection.X), NaNFix(asymptoteDirection.Y), NaNFix(asymptoteDirection.Z))
         };
     }
 
-    public static OrbitParameters KeplarOrbit(Vector3 position, Vector3 velocity, float bodyMass, DateTime date = default)
+    public static OrbitParameters KeplarOrbit(Vector3D position, Vector3D velocity, double bodyMass, DateTime date = default)
     {
         if (date == default) date = DateTime.UtcNow;
-        float mu = G * bodyMass;
+        double mu = G * bodyMass;
 
         // Calculate specific angular momentum
-        Vector3 h = Vector3.Cross(position, velocity);
-        float hMagnitude = h.Magnitude();
+        Vector3D h = Vector3D.Cross(position, velocity);
+        double hMagnitude = h.Magnitude();
 
         // Calculate eccentricity vector
-        float r = position.Magnitude();
-        float v = velocity.Magnitude();
-        float rDotV = Vector3.Dot(position, velocity);
+        double r = position.Magnitude();
+        double v = velocity.Magnitude();
+        double rDotV = Vector3D.Dot(position, velocity);
 
-        Vector3 eVector = ((v * v - mu / r) * position - rDotV * velocity) / mu;
-        float eccentricity = eVector.Magnitude();
+        Vector3D eVector = ((v * v - mu / r) * position - rDotV * velocity) / mu;
+        double eccentricity = eVector.Magnitude();
 
         // Calculate specific orbital energy
-        float orbitalEnergy = v * v / 2 - mu / r;
+        double orbitalEnergy = v * v / 2 - mu / r;
 
         // Determine the orbit type
         OrbitType orbitType;
@@ -71,38 +71,38 @@ public static class Solve
         {
             orbitType = OrbitType.Hyperbolic;
         }
-        float semiMajorAxis = orbitType == OrbitType.Elliptical
+        double semiMajorAxis = orbitType == OrbitType.Elliptical
             ? -mu / (2 * orbitalEnergy)
             //PeA
-            : mu / (2 * MathF.Abs(orbitalEnergy));
+            : mu / (2 * Math.Abs(orbitalEnergy));
         // Calculate inclination
-        float inclination = MathF.Acos(h.Z / hMagnitude);
+        double inclination = Math.Acos(h.Z / hMagnitude);
         // Calculate longitude of the ascending node
-        Vector3 n = new Vector3(-h.Y, h.X, 0); // Node line
-        float nMagnitude = n.Magnitude();
-        float longitudeOfAscendingNode = MathF.Acos(n.X / nMagnitude);
+        Vector3D n = new Vector3D(-h.Y, h.X, 0); // Node line
+        double nMagnitude = n.Magnitude();
+        double longitudeOfAscendingNode = Math.Acos(n.X / nMagnitude);
         if (n.Y < 0)
         {
-            longitudeOfAscendingNode = 2 * MathF.PI - longitudeOfAscendingNode;
+            longitudeOfAscendingNode = 2 * Math.PI - longitudeOfAscendingNode;
         }
         // Calculate argument of periapsis
-        float argumentOfPeriapsis = MathF.Acos(Vector3.Dot(n, eVector) / (nMagnitude * eccentricity));
+        double argumentOfPeriapsis = Math.Acos(Vector3D.Dot(n, eVector) / (nMagnitude * eccentricity));
         if (eVector.Z < 0)
         {
-            argumentOfPeriapsis = 2 * MathF.PI - argumentOfPeriapsis;
+            argumentOfPeriapsis = 2 * Math.PI - argumentOfPeriapsis;
         }
         // Calculate true anomaly
-        float trueAnomaly = MathF.Acos(Vector3.Dot(eVector, position) / (eccentricity * r));
+        double trueAnomaly = Math.Acos(Vector3D.Dot(eVector, position) / (eccentricity * r));
         if (rDotV < 0)
         {
-            trueAnomaly = 2 * MathF.PI - trueAnomaly;
+            trueAnomaly = 2 * Math.PI - trueAnomaly;
         }
         // Calculate mean anomaly and time of periapsis passage
-        float meanAnomaly = trueAnomaly - eccentricity * MathF.Sin(trueAnomaly);
-        float timeOfPeriapsisPassage = meanAnomaly / MathF.Sqrt(mu / MathF.Pow(semiMajorAxis, 3));
+        double meanAnomaly = trueAnomaly - eccentricity * Math.Sin(trueAnomaly);
+        double timeOfPeriapsisPassage = meanAnomaly / Math.Sqrt(mu / Math.Pow(semiMajorAxis, 3));
         // For hyperbolic orbits, calculate the asymptote direction
-        Vector3 asymptoteDirection = orbitType == OrbitType.Hyperbolic ? eVector.Normalize() : Vector3.Zero;
-        var orbitalPeriod = 2 * MathF.PI * MathF.Sqrt(MathF.Pow(semiMajorAxis, 3) / mu);
+        Vector3D asymptoteDirection = orbitType == OrbitType.Hyperbolic ? eVector.Normalize() : Vector3D.Zero;
+        var orbitalPeriod = 2 * Math.PI * Math.Sqrt(Math.Pow(semiMajorAxis, 3) / mu);
         return new OrbitParameters
         {
             Type = orbitType,
@@ -117,47 +117,47 @@ public static class Solve
             TimeOfPeriapsisPassage = NaNFix(timeOfPeriapsisPassage),
             GravitationalParameter = NaNFix(mu),
             EpochTime = date,
-            AsymptoteDirection = new Vector3(NaNFix(asymptoteDirection.X), NaNFix(asymptoteDirection.Y), NaNFix(asymptoteDirection.Z))
+            AsymptoteDirection = new Vector3D(NaNFix(asymptoteDirection.X), NaNFix(asymptoteDirection.Y), NaNFix(asymptoteDirection.Z))
         };
     }
-    static float NaNFix(float v) => float.IsNaN(v) ? 0f : v;
-    public static float OrbitVelocity(float radius, float planetMass)
+    static double NaNFix(double v) => double.IsNaN(v) ? 0f : v;
+    public static double OrbitVelocity(double radius, double planetMass)
     {
-        float velocity = MathF.Sqrt(G * planetMass / radius);
-        return (float)velocity;
+        double velocity = Math.Sqrt(G * planetMass / radius);
+        return (double)velocity;
     }
-    public static IEnumerable<Vector3> OrbitPoints(OrbitParameters p, int points)
+    public static IEnumerable<Vector3D> OrbitPoints(OrbitParameters p, int points)
     {
-        List<Vector3> coordinates = new List<Vector3>();
+        List<Vector3D> coordinates = new List<Vector3D>();
 
         // Pre-compute the rotation matrix components
-        float cosInclination = MathF.Cos(p.Inclination);
-        float sinInclination = MathF.Sin(p.Inclination);
-        float cosLongitudeOfAscendingNode = MathF.Cos(p.LongitudeOfAscendingNode);
-        float sinLongitudeOfAscendingNode = MathF.Sin(p.LongitudeOfAscendingNode);
-        float cosArgumentOfPeriapsis = MathF.Cos(p.ArgumentOfPeriapsis);
-        float sinArgumentOfPeriapsis = MathF.Sin(p.ArgumentOfPeriapsis);
+        double cosInclination = Math.Cos(p.Inclination);
+        double sinInclination = Math.Sin(p.Inclination);
+        double cosLongitudeOfAscendingNode = Math.Cos(p.LongitudeOfAscendingNode);
+        double sinLongitudeOfAscendingNode = Math.Sin(p.LongitudeOfAscendingNode);
+        double cosArgumentOfPeriapsis = Math.Cos(p.ArgumentOfPeriapsis);
+        double sinArgumentOfPeriapsis = Math.Sin(p.ArgumentOfPeriapsis);
         // Define the range for the true anomaly for hyperbolic orbits, e.g., from -π/2 to π/2 radians
-        float startAnomaly = 0f;
-        float endAnomaly = MathF.PI * 2;
+        double startAnomaly = 0f;
+        double endAnomaly = Math.PI * 2;
         if (p.Type == OrbitType.Hyperbolic)
         {
             // Use a higher sampling range for hyperbolic orbits to capture more of the trajectory
-            startAnomaly =1f- -MathF.PI /2f; // Adjust according to desired segment
-            endAnomaly =1f- MathF.PI /2f; // Adjust according to desired segment
+            startAnomaly =1f- -Math.PI /2f; // Adjust according to desired segment
+            endAnomaly =1f- Math.PI /2f; // Adjust according to desired segment
         }
         // Loop through the points
         for (int i = 0; i < points; i++)
         {
-            float trueAnomaly = startAnomaly + (endAnomaly - startAnomaly) * i / points;
+            double trueAnomaly = startAnomaly + (endAnomaly - startAnomaly) * i / points;
 
             // Calculate the radius in the orbital plane
-            float radius = p.SemiMajorAxis * (1 - p.Eccentricity * p.Eccentricity) / (1 + p.Eccentricity * MathF.Cos(trueAnomaly));
+            double radius = p.SemiMajorAxis * (1 - p.Eccentricity * p.Eccentricity) / (1 + p.Eccentricity * Math.Cos(trueAnomaly));
             // Position in the orbital plane
-            float xOrbital = radius * MathF.Cos(trueAnomaly);
-            float yOrbital = radius * MathF.Sin(trueAnomaly);
+            double xOrbital = radius * Math.Cos(trueAnomaly);
+            double yOrbital = radius * Math.Sin(trueAnomaly);
             // Transform the coordinates to the inertial frame
-            float xInertial, yInertial, zInertial;
+            double xInertial, yInertial, zInertial;
             if (p.Eccentricity == 0f)
             {
                 xInertial = xOrbital * cosLongitudeOfAscendingNode -
@@ -176,72 +176,72 @@ public static class Solve
                                    cosArgumentOfPeriapsis * sinInclination * yOrbital;
             }
             // Add the point to the list
-            yield return new Vector3((float)xInertial, (float)yInertial, (float)zInertial);
+            yield return new Vector3D((double)xInertial, (double)yInertial, (double)zInertial);
         }
     }
-    public static Vector3 PositionAtTime(this OrbitParameters parameters, DateTime time)
+    public static Vector3D PositionAtTime(this OrbitParameters parameters, DateTime time)
     {
         // Calculate the mean anomaly at the given time
-        float meanMotion = MathF.Sqrt(parameters.GravitationalParameter / MathF.Pow(parameters.SemiMajorAxis, 3));
-        float timeSincePeriapsis = parameters.TimeOfPeriapsisPassage - (float)(time - parameters.EpochTime).TotalSeconds;
-        float meanAnomaly = parameters.MeanAnomaly + meanMotion * timeSincePeriapsis;
+        double meanMotion = Math.Sqrt(parameters.GravitationalParameter / Math.Pow(parameters.SemiMajorAxis, 3));
+        double timeSincePeriapsis = parameters.TimeOfPeriapsisPassage - (double)(time - parameters.EpochTime).TotalSeconds;
+        double meanAnomaly = parameters.MeanAnomaly + meanMotion * timeSincePeriapsis;
 
         // Solve Kepler's equation to get the eccentric anomaly
-        float eccentricAnomaly = meanAnomaly;
+        double eccentricAnomaly = meanAnomaly;
         for (int i = 0; i < 10; i++) // Iterate to solve Kepler's equation
         {
-            eccentricAnomaly = meanAnomaly + parameters.Eccentricity * MathF.Sin(eccentricAnomaly);
+            eccentricAnomaly = meanAnomaly + parameters.Eccentricity * Math.Sin(eccentricAnomaly);
         }
 
         // Calculate the true anomaly from the eccentric anomaly
-        float trueAnomaly = 2 * MathF.Atan2(
-            MathF.Sqrt(1 + parameters.Eccentricity) * MathF.Sin(eccentricAnomaly / 2),
-            MathF.Sqrt(1 - parameters.Eccentricity) * MathF.Cos(eccentricAnomaly / 2)
+        double trueAnomaly = 2 * Math.Atan2(
+            Math.Sqrt(1 + parameters.Eccentricity) * Math.Sin(eccentricAnomaly / 2),
+            Math.Sqrt(1 - parameters.Eccentricity) * Math.Cos(eccentricAnomaly / 2)
         );
 
         // Calculate the radius in the orbital plane
-        float radius = parameters.SemiMajorAxis * (1 - parameters.Eccentricity * MathF.Cos(eccentricAnomaly));
+        double radius = parameters.SemiMajorAxis * (1 - parameters.Eccentricity * Math.Cos(eccentricAnomaly));
 
         // Position in the orbital plane
-        float xOrbital = radius * MathF.Cos(trueAnomaly);
-        float yOrbital = radius * MathF.Sin(trueAnomaly);
+        double xOrbital = radius * Math.Cos(trueAnomaly);
+        double yOrbital = radius * Math.Sin(trueAnomaly);
 
         // Transform the coordinates to the inertial frame
-        float cosInclination = MathF.Cos(parameters.Inclination);
-        float sinInclination = MathF.Sin(parameters.Inclination);
-        float cosLongitudeOfAscendingNode = MathF.Cos(parameters.LongitudeOfAscendingNode);
-        float sinLongitudeOfAscendingNode = MathF.Sin(parameters.LongitudeOfAscendingNode);
-        float cosArgumentOfPeriapsis = MathF.Cos(parameters.ArgumentOfPeriapsis);
-        float sinArgumentOfPeriapsis = MathF.Sin(parameters.ArgumentOfPeriapsis);
+        double cosInclination = Math.Cos(parameters.Inclination);
+        double sinInclination = Math.Sin(parameters.Inclination);
+        double cosLongitudeOfAscendingNode = Math.Cos(parameters.LongitudeOfAscendingNode);
+        double sinLongitudeOfAscendingNode = Math.Sin(parameters.LongitudeOfAscendingNode);
+        double cosArgumentOfPeriapsis = Math.Cos(parameters.ArgumentOfPeriapsis);
+        double sinArgumentOfPeriapsis = Math.Sin(parameters.ArgumentOfPeriapsis);
 
-        float xInertial = (cosLongitudeOfAscendingNode * cosArgumentOfPeriapsis - sinLongitudeOfAscendingNode * sinArgumentOfPeriapsis * cosInclination) * xOrbital +
+        double xInertial = (cosLongitudeOfAscendingNode * cosArgumentOfPeriapsis - sinLongitudeOfAscendingNode * sinArgumentOfPeriapsis * cosInclination) * xOrbital +
                           (-cosLongitudeOfAscendingNode * sinArgumentOfPeriapsis - sinLongitudeOfAscendingNode * cosArgumentOfPeriapsis * cosInclination) * yOrbital;
-        float yInertial = (sinLongitudeOfAscendingNode * cosArgumentOfPeriapsis + cosLongitudeOfAscendingNode * sinArgumentOfPeriapsis * cosInclination) * xOrbital +
+        double yInertial = (sinLongitudeOfAscendingNode * cosArgumentOfPeriapsis + cosLongitudeOfAscendingNode * sinArgumentOfPeriapsis * cosInclination) * xOrbital +
                           (-sinLongitudeOfAscendingNode * sinArgumentOfPeriapsis + cosLongitudeOfAscendingNode * cosArgumentOfPeriapsis * cosInclination) * yOrbital;
-        float zInertial = sinArgumentOfPeriapsis * sinInclination * xOrbital +
+        double zInertial = sinArgumentOfPeriapsis * sinInclination * xOrbital +
                           cosArgumentOfPeriapsis * sinInclination * yOrbital;
 
-        return new Vector3(xInertial, yInertial, zInertial);
+        return new Vector3D(xInertial, yInertial, zInertial);
     }
-    public static (Vector3 position, Vector3 velocity) ApplyGravity(Vector3 position, Vector3 velocity, float planetMass, float stepTimeSeconds)
+    public static (Vector3D position, Vector3D velocity) ApplyGravity(Vector3D position, Vector3D velocity, double planetMass, double stepTimeSeconds)
     {
-        float massOfObject = 1.0f; // Assuming a unit mass for the object since mass cancels out in F = ma for gravitational calculations.
+        double massOfObject = 1.0f; // Assuming a unit mass for the object since mass cancels out in F = ma for gravitational calculations.
 
         // Calculate the gravitational force
-        float distance = position.Length();
-        float forceMagnitude = G * planetMass * massOfObject / (distance * distance);
+        double distance = position.Length();
+        double forceMagnitude = G * planetMass * massOfObject / (distance * distance);
 
         // Compute the direction of the force
-        Vector3 forceDirection = Vector3.Normalize(-position);
+        Vector3D forceDirection = (position * -1).Normalize();
 
         // Calculate the acceleration (Newton's Second Law: F = ma -> a = F / m)
-        Vector3 acceleration = forceDirection * forceMagnitude / massOfObject;
+        Vector3D acceleration = forceDirection * forceMagnitude / massOfObject;
 
         // Update velocity based on acceleration (v = u + at)
-        Vector3 newVelocity = velocity + acceleration * stepTimeSeconds;
+        Vector3D newVelocity = velocity + acceleration * stepTimeSeconds;
 
         // Update position based on new velocity (s = ut + 0.5at^2 can be simplified in this step-wise approach to s = s + vt)
-        Vector3 newPosition = position + newVelocity * stepTimeSeconds;
+        Vector3D newPosition = position + newVelocity * stepTimeSeconds;
 
         return (newPosition, newVelocity);
     }

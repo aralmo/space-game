@@ -16,10 +16,10 @@ public class Simulation
         {
             if (body.Model == null) continue;
             var position = body.GetPosition(SimulationTime);
-            var distance = Vector3.Distance(camera.Position, position);
+            var distance = Vector3D.Distance(camera.Position, position);
             if (distance < 1000 - body.Size)
             {
-                DrawModel(body.Model.Value, position, body.Size, Color.White);
+                DrawModel(body.Model.Value, position, (float)body.Size, Color.White);
             }
         }
     }
@@ -28,15 +28,15 @@ public class Simulation
         foreach (var body in celestialBodies)
         {
             var position = body.GetPosition(SimulationTime);
-            var distance = Vector3.Distance(camera.Position, position);
+            var distance = Vector3D.Distance(camera.Position, position);
             if (body.Model == null ||  distance >= 1000 - body.Size)
             {
                 var screenPosition = GetWorldToScreen(position, camera);
                 if (screenPosition.X >= 0 && screenPosition.X <= GetScreenWidth() && screenPosition.Y >= 0 && screenPosition.Y <= GetScreenHeight())
                 {
-                    float sizeFactor = 1000 / distance; // Adjust size based on distance
-                    float drawSize = body.Size * sizeFactor;
-                    DrawCircle((int) float.Round(screenPosition.X), (int)float.Round(screenPosition.Y), drawSize, body.FarColor);
+                    double sizeFactor = 1000 / distance; // Adjust size based on distance
+                    float drawSize =(float) Math.Max(1f, body.Size * sizeFactor);
+                    DrawCircle((int) double.Round(screenPosition.X), (int)double.Round(screenPosition.Y), drawSize, body.FarColor);
                 }
             }
         }

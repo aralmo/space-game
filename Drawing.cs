@@ -21,7 +21,7 @@ public static class Drawing
         }
     }
 
-    public static void Draw2DLineOfPoints(Camera3D camera, Vector3[] points, Color? color = null)
+    public static void Draw2DLineOfPoints(Camera3D camera, Vector3D[] points, Color? color = null)
     {
         foreach (var (a, b) in GetLines(camera, points, true))
         {
@@ -29,7 +29,7 @@ public static class Drawing
            // DrawCircle((int)a.X, (int)a.Y, 1, color.HasValue ? color.Value : Color.Green);
         }
     }
-    public static IEnumerable<(Vector2 a, Vector2 b)> GetLines(Camera3D camera, Vector3[] points, bool closed)
+    public static IEnumerable<(Vector2 a, Vector2 b)> GetLines(Camera3D camera, Vector3D[] points, bool closed)
     {
         var sw = GetScreenWidth();
         var sh = GetScreenHeight();
@@ -76,7 +76,7 @@ public static class Drawing
             DrawText(text, x, y, 20, Color.White);
         }
 
-        void DrawFloatInput(ref float value, int x, int y)
+        void DrawDoubleInput(ref double value, int x, int y)
         {
             string input = value.ToString("F2");
             input = DrawTextBox(input, x, y, inputWidth, 20);
@@ -123,54 +123,54 @@ public static class Drawing
             }
         }
 
-        void DrawVector3Input(ref Vector3 value, int x, int y)
+        void DrawVector3DInput(ref Vector3D value, int x, int y)
         {
             DrawLabel("X:", x, y);
-            DrawFloatInput(ref value.X, x + 30, y);
+            DrawDoubleInput(ref value.X, x + 30, y);
             DrawLabel("Y:", x + 100, y);
-            DrawFloatInput(ref value.Y, x + 130, y);
+            DrawDoubleInput(ref value.Y, x + 130, y);
             DrawLabel("Z:", x + 200, y);
-            DrawFloatInput(ref value.Z, x + 230, y);
+            DrawDoubleInput(ref value.Z, x + 230, y);
         }
 
         DrawLabel("Semi-Major Axis:", x, y);
-        DrawFloatInput(ref pars.SemiMajorAxis, x + labelWidth, y);
+        DrawDoubleInput(ref pars.SemiMajorAxis, x + labelWidth, y);
         y += spacing;
 
         DrawLabel("Eccentricity:", x, y);
-        DrawFloatInput(ref pars.Eccentricity, x + labelWidth, y);
+        DrawDoubleInput(ref pars.Eccentricity, x + labelWidth, y);
         y += spacing;
 
         DrawLabel("Inclination:", x, y);
-        DrawFloatInput(ref pars.Inclination, x + labelWidth, y);
+        DrawDoubleInput(ref pars.Inclination, x + labelWidth, y);
         y += spacing;
 
         DrawLabel("Longitude of Ascending Node:", x, y);
-        DrawFloatInput(ref pars.LongitudeOfAscendingNode, x + labelWidth, y);
+        DrawDoubleInput(ref pars.LongitudeOfAscendingNode, x + labelWidth, y);
         y += spacing;
 
         DrawLabel("Argument of Periapsis:", x, y);
-        DrawFloatInput(ref pars.ArgumentOfPeriapsis, x + labelWidth, y);
+        DrawDoubleInput(ref pars.ArgumentOfPeriapsis, x + labelWidth, y);
         y += spacing;
 
         DrawLabel("True Anomaly:", x, y);
-        DrawFloatInput(ref pars.TrueAnomaly, x + labelWidth, y);
+        DrawDoubleInput(ref pars.TrueAnomaly, x + labelWidth, y);
         y += spacing;
 
         DrawLabel("Mean Anomaly:", x, y);
-        DrawFloatInput(ref pars.MeanAnomaly, x + labelWidth, y);
+        DrawDoubleInput(ref pars.MeanAnomaly, x + labelWidth, y);
         y += spacing;
 
         DrawLabel("Time of Periapsis Passage:", x, y);
-        DrawFloatInput(ref pars.TimeOfPeriapsisPassage, x + labelWidth, y);
+        DrawDoubleInput(ref pars.TimeOfPeriapsisPassage, x + labelWidth, y);
         y += spacing;
 
         DrawLabel("Gravitational Parameter:", x, y);
-        DrawFloatInput(ref pars.GravitationalParameter, x + labelWidth, y);
+        DrawDoubleInput(ref pars.GravitationalParameter, x + labelWidth, y);
         y += spacing;
 
         DrawLabel("Asymptote Direction:", x, y);
-        DrawVector3Input(ref pars.AsymptoteDirection, x + labelWidth, y);
+        DrawVector3DInput(ref pars.AsymptoteDirection, x + labelWidth, y);
         y += spacing;
     }
 
