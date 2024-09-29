@@ -41,7 +41,7 @@ internal class Program
             UpdateCamera(ref camera, ref cameraAngle, ref cameraDistance, delta_time);
             BeginDrawing();
             ClearBackground(Color.Black);
-            var t = (simulation.SimulationTime - DateTime.UnixEpoch).TotalSeconds % (Math.PI*2);
+            var t = (simulation.SimulationTime - DateTime.UnixEpoch).TotalSeconds*.2f % (Math.PI*2);
             DrawText($"{t}",10,10,10,Color.White);
             for (int i = 0; i < backgroundStars.Count; i++)
             {
@@ -74,11 +74,11 @@ internal class Program
 
         for (int i = 0; i < numberOfStars; i++)
         {
-            float theta = (float)(random.NextDouble() * 2 * Math.PI);
-            float phi = (float)(Math.Acos(2 * random.NextDouble() - 1));
-            float x = radius * MathF.Sin(phi) * MathF.Cos(theta);
-            float y = radius * MathF.Sin(phi) * MathF.Sin(theta);
-            float z = radius * MathF.Cos(phi);
+            float t = (float)(random.NextDouble() * 2 * Math.PI);
+            float p = (float)(Math.Acos(2 * random.NextDouble() - 1));
+            float x = radius * MathF.Sin(p) * MathF.Cos(t);
+            float y = radius * MathF.Sin(p) * MathF.Sin(t);
+            float z = radius * MathF.Cos(p);
             stars.Add(new Vector3(x, y, z));
         }
 
