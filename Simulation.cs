@@ -47,29 +47,7 @@ public class Simulation
         {
             if ((centerBody == null || centerBody.Equals(body.CentralBody)) && body.OrbitPoints != null && body.CentralBody != null)
             {
-                var orbitPoints2D = body.OrbitPoints
-                    .Select(p => GetWorldToScreen(p + body.CentralBody.GetPosition(SimulationTime), camera))
-                    .ToList();
-
-                for (int i = 0; i < orbitPoints2D.Count - 1; i++)
-                {
-                    bool anyPointInsideScreen = orbitPoints2D.Any(p => p.X >= 0 && p.X <= GetScreenWidth() && p.Y >= 0 && p.Y <= GetScreenHeight());
-                    if (!anyPointInsideScreen)
-                    {
-                        continue;
-                    }
-                    DrawLine((int)float.Round(orbitPoints2D[i].X), (int)float.Round(orbitPoints2D[i].Y), (int)float.Round(orbitPoints2D[i + 1].X), (int)float.Round(orbitPoints2D[i + 1].Y), Color.Gray);
-                }
-                if (orbitPoints2D.Count > 1)
-                {
-                    bool anyPointInsideScreen = orbitPoints2D.Any(p => p.X >= 0 && p.X <= GetScreenWidth() && p.Y >= 0 && p.Y <= GetScreenHeight());
-                    if (anyPointInsideScreen)
-                    {
-                        var firstPoint = orbitPoints2D.First();
-                        var lastPoint = orbitPoints2D.Last();
-                        DrawLine((int)lastPoint.X, (int)lastPoint.Y, (int)firstPoint.X, (int)firstPoint.Y, Color.Gray);
-                    }
-                }
+                Drawing.Draw2DLineOfPoints(camera, body.OrbitPoints.Select(p => p+ body.CentralBody.GetPosition(SimulationTime)).ToArray());
             }
         }
     }

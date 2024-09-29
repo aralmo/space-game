@@ -21,6 +21,34 @@ public static class Drawing
         }
     }
 
+    public static void Draw2DLineOfPoints(Camera3D camera, Vector3[] points, Color? color = null)
+    {
+        foreach (var (a, b) in GetLines(camera, points, true))
+        {
+            DrawLine((int)a.X, (int)a.Y, (int)b.X, (int)b.Y, color.HasValue?color.Value:Color.DarkGray);
+        }
+    }
+    public static IEnumerable<(Vector2 a, Vector2 b)> GetLines(Camera3D camera, Vector3[] points, bool closed)
+    {
+        for (int i = 0; i < points.Length - 1; i++)
+        {
+            var a = points[i];
+            var b = points[i + 1];
+            if (closed && i == points.Length - 2)
+            {
+                b = points[0];
+            }
+            if (!IsBehindCamera(camera, a) || !IsBehindCamera(camera, b))
+            {
+                var screenA = GetWorldToScreen(a, camera);
+                var screenB = GetWorldToScreen(b, camera);
+                yield return (screenA, screenB);
+            }
+        }
+    }
+
+    static bool IsBehindCamera(Camera3D camera, Vector3 point)
+        => Vector3.Dot(Vector3.Normalize(point - camera.Position), camera.Target - camera.Position) <= 0;
 
     static (int x, int y) selected = default;
     static string input = string.Empty;

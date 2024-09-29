@@ -45,7 +45,7 @@ internal class Program
             BeginDrawing();
             DrawBackground(camera, backgroundStars, simulation);
             simulation.DrawFarAwayBodies(camera);
-            simulation.DrawOrbits2D(camera, orbitingCamera.Target);
+            simulation.DrawOrbits2D(camera);
             BeginMode3D(camera);
             simulation.Draw(camera);
             EndMode3D();
