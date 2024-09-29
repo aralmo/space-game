@@ -8,7 +8,7 @@ public class Simulation
         celestialBodies.Add(body);
         return this;
     }
- 
+
     //todo: everything below this point should go to a SimulationVisuals of some kind
 
     public void Draw(Camera3D camera)
@@ -30,14 +30,14 @@ public class Simulation
         {
             var position = body.GetPosition(SimulationTime);
             var distance = Vector3D.Distance(camera.Position, position);
-            if (body.Model == null ||  distance >= 1000 - body.Size)
+            if (body.Model == null || distance >= 1000 - body.Size)
             {
                 var screenPosition = GetWorldToScreen(position, camera);
                 if (screenPosition.X >= 0 && screenPosition.X <= GetScreenWidth() && screenPosition.Y >= 0 && screenPosition.Y <= GetScreenHeight())
                 {
                     double sizeFactor = 1000 / distance;
-                    float drawSize =(float) Math.Max(1f, body.Size * sizeFactor);
-                    DrawCircle((int) double.Round(screenPosition.X), (int)double.Round(screenPosition.Y), drawSize, body.FarColor);
+                    float drawSize = (float)Math.Max(1f, body.Size * sizeFactor);
+                    DrawCircle((int)double.Round(screenPosition.X), (int)double.Round(screenPosition.Y), drawSize, body.FarColor);
                 }
             }
         }
@@ -46,10 +46,10 @@ public class Simulation
     {
         foreach (var body in celestialBodies)
         {
-            if (centerBody == null || centerBody.Equals(body.CentralBody))
+            if (body.OrbitPoints != null)
             {
-                var color = (centerBody != null && centerBody.CentralBody == body)?Color.Gray:Color.DarkGray;
-                Drawing.Draw2DLineOfPoints(camera, body.OrbitPoints!.Select(p => p+ body.CentralBody!.GetPosition(SimulationTime)).ToArray(),color);
+                var color = (centerBody != null && centerBody == body) ? new Color(40,40,40,255) : Color.DarkGray;
+                Drawing.Draw2DLineOfPoints(camera, body.OrbitPoints!.Select(p => p + body.CentralBody!.GetPosition(SimulationTime)).ToArray(), color);
             }
         }
     }

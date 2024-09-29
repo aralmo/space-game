@@ -17,7 +17,7 @@ internal class Program
             .WithModelVisuals(model: null, size: 60f, Color.Yellow);
 
         var planet = CelestialBody
-            .Create(centralBody: sun, radius: 1000f, mass: 90f, eccentricity: 0.05f)
+            .Create(centralBody: sun, radius: 2000f, mass: 120f, eccentricity: 0.05f)
             .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.EarthLike, 1), size: 4f, Color.Blue);
 
         simulation
@@ -33,19 +33,30 @@ internal class Program
                 .Create(centralBody: planet, radius: 126f, mass: 44f, eccentricity: -0.17f, inclination: 0.23f, argumentOfPeriapsis: 4.2f)
                 .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.IcePlanet, 4), size: 0.9f));
 
-        var orbitingCamera = new OrbitingCamera(target: planet, initialDistance: 100.0f, initialAngle: 0.0f);
+        var targetIndex = 0;
+        var target = simulation.CelestialBodies.ElementAt(targetIndex);
+        var orbitingCamera = new OrbitingCamera(target, initialDistance: 200f, initialAngle: 0.0f);
 
         while (!WindowShouldClose())
         {
             var delta_time = (float)(DateTime.UtcNow - lastFrame).TotalSeconds;
             simulation.SimulationTime = DateTime.UtcNow;
             lastFrame = DateTime.UtcNow;
+
+            // Check for tab key press to cycle through targets
+            if (IsKeyPressed(KeyboardKey.Tab))
+            {
+                targetIndex = (targetIndex + 1) % simulation.CelestialBodies.Count();
+                target = simulation.CelestialBodies.ElementAt(targetIndex);
+                orbitingCamera = new OrbitingCamera(target, initialDistance:(float) target.Size * 6f, initialAngle: 0.0f);
+            }
+
             orbitingCamera.Update(simulation.SimulationTime);
             var camera = orbitingCamera.GetCamera();
             BeginDrawing();
             DrawBackground(camera, backgroundStars, simulation);
             simulation.DrawFarAwayBodies(camera);
-            simulation.DrawOrbits2D(camera);
+            simulation.DrawOrbits2D(camera, target);
             BeginMode3D(camera);
             simulation.Draw(camera);
             EndMode3D();
