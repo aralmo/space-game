@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.Xml.Serialization;
 
-public static class SetTarget
+public static class VNext
 {
 
     public static unsafe void Run()

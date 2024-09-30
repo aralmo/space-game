@@ -8,6 +8,6 @@ internal class Program
     private static unsafe void Main(string[] args)
     {
         //Game.Run();
-        SetTarget.Run();
+        VNext.Run();
     }
 }
