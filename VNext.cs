@@ -15,14 +15,13 @@ public static class VNext
 
         var simulation = Test.DefaultSimulation();
         var planet = simulation.OrbitingBodies.Skip(1).First();
-        var orbit = Solve.CircularOrbit(10, planet.Mass, lastFrame);
-
+        var ship = OrbitingObject.Create(planet, 10, 1);
         var targetIndex = 1;
         var cameraTarget = simulation.OrbitingBodies.ElementAt(targetIndex);
         CelestialBody? target = null;
         var orbitingCamera = new OrbitingCamera(cameraTarget, initialAngle: 0.0f);
-        var spaceship_vel = orbit.VelocityAtTime(lastFrame) + planet.OrbitParameters.Value.VelocityAtTime(lastFrame);
-        var spaceship_pos = orbit.PositionAtTime(lastFrame) + planet.GetPosition(lastFrame);
+        var spaceship_vel = ship.GetVelocity(lastFrame);
+        var spaceship_pos = ship.GetPosition(lastFrame);
 
         while (!WindowShouldClose())
         {
@@ -55,7 +54,7 @@ public static class VNext
             }
 
             orbitingCamera.Update(simulation.SimulationTime);
-            var opoints = Solve.OrbitPoints(orbit, 100).ToArray();
+            var opoints = ship.OrbitPoints;
             var camera = orbitingCamera.GetCamera();
             BeginDrawing();
             spaceship_pos += spaceship_vel * delta_time;

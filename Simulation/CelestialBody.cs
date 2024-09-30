@@ -1,4 +1,3 @@
-
 public class CelestialBody : OrbitingObject
 {
     #region Factory Methods
@@ -9,13 +8,13 @@ public class CelestialBody : OrbitingObject
     /// <param name="radius"></param>
     /// <param name="mass"></param>
     /// <returns></returns>
-    public static CelestialBody Create(OrbitingObject centralBody, double radius, double mass, double? eccentricity = null, double? inclination = null, double? argumentOfPeriapsis = null)
+    public static CelestialBody CreateCelestial(OrbitingObject centralBody, double radius, double mass, double? eccentricity = null, double? inclination = null, double? argumentOfPeriapsis = null)
     {
         var orbit = Solve.CircularOrbit(radius, centralBody.Mass, default);
         if (eccentricity != null) orbit.Eccentricity = eccentricity.Value;
         if (inclination != null) orbit.Inclination = inclination.Value;
         if (argumentOfPeriapsis != null) orbit.ArgumentOfPeriapsis = argumentOfPeriapsis.Value;
-        return Create(centralBody, orbit, mass);
+        return CreateCelestial(centralBody, orbit, mass);
     }
     /// <summary>
     /// Creates a static celestial body, meaning it doesn't orbit any other body.
@@ -23,7 +22,7 @@ public class CelestialBody : OrbitingObject
     /// <param name="position"></param>
     /// <param name="mass"></param>
     /// <returns></returns>
-    public static CelestialBody Create(Vector3D position, double mass)
+    public static CelestialBody CreateCelestial(Vector3D position, double mass)
         => new CelestialBody(_ => position, mass);
     /// <summary>
     /// Creates a new celestial body that is orbiting another central body.
@@ -32,8 +31,8 @@ public class CelestialBody : OrbitingObject
     /// <param name="parameters"></param>
     /// <param name="mass"></param>
     /// <returns></returns>
-    public static CelestialBody Create(OrbitingObject centralBody, OrbitParameters parameters, double mass)
-        => new CelestialBody(time => parameters.PositionAtTime(time) + centralBody.GetPosition(time), mass)
+    public static CelestialBody CreateCelestial(OrbitingObject centralBody, OrbitParameters parameters, double mass)
+        => new CelestialBody(time => parameters.PositionAtTime(time), mass)
         {
             OrbitPoints = (parameters.Type == OrbitType.Elliptical)
                 ? Solve.OrbitPoints(parameters, (int)parameters.SemiMajorAxis * 2).ToArray()
@@ -45,7 +44,7 @@ public class CelestialBody : OrbitingObject
     #endregion
 
     #region Visuals
-    public string Name { get; protected set; }
+    public string? Name { get; protected set; }
     public float Size { get; protected set; } = 1f;
     public Model? Model { get; protected set; }
     public Color FarColor { get; protected set; }

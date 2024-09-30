@@ -25,7 +25,6 @@ public static class Game
             {
                 targetIndex = (targetIndex + 1) % simulation.OrbitingBodies.Count();
                 target = simulation.OrbitingBodies.ElementAt(targetIndex);
-                //todo: set target
                 orbitingCamera = new OrbitingCamera(target, initialAngle: 0.0f);
             }
 

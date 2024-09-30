@@ -4,12 +4,12 @@ public static class Test
     {
         var simulation = new Simulation();
         var sun = CelestialBody
-            .Create(Vector3D.Zero, 100000f)
+            .CreateCelestial(Vector3D.Zero, 100000f)
             .WithModelVisuals(model: null, size: 60f, Color.Yellow)
             .WithInfo(name: "Aeon Prime");
 
         var planet = CelestialBody
-            .Create(centralBody: sun, radius: 2000f, mass: 900f, eccentricity: 0.05f)
+            .CreateCelestial(centralBody: sun, radius: 2000f, mass: 900f, eccentricity: 0.05f)
             .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.EarthLike, 1), size: 4f, Color.Blue)
             .WithInfo(name: "Aeon-1");
 
@@ -17,15 +17,15 @@ public static class Test
             .AddOrbitingBody(sun)
             .AddOrbitingBody(planet)
             .AddOrbitingBody(CelestialBody
-                .Create(centralBody: planet, radius: 190f, mass: 90f, eccentricity: 0.12f, inclination: 1.27f, argumentOfPeriapsis: 1f)
+                .CreateCelestial(centralBody: planet, radius: 190f, mass: 90f, eccentricity: 0.12f, inclination: 1.27f, argumentOfPeriapsis: 1f)
                 .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.Moon, 2), size: 1f)
                 .WithInfo(name: "Aeon-1A"))
             .AddOrbitingBody(CelestialBody
-                .Create(centralBody: planet, radius: 276f, mass: 65f, eccentricity: 0.13f, inclination: 1.73f, argumentOfPeriapsis: 2.3f)
+                .CreateCelestial(centralBody: planet, radius: 276f, mass: 65f, eccentricity: 0.13f, inclination: 1.73f, argumentOfPeriapsis: 2.3f)
                 .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.Moon, 3), size: 0.7f)
                 .WithInfo(name: "Aeon-1B"))
             .AddOrbitingBody(CelestialBody
-                .Create(centralBody: planet, radius: 105f, mass: 44f, eccentricity: -0.27f, inclination: 0.23f, argumentOfPeriapsis: 4.2f)
+                .CreateCelestial(centralBody: planet, radius: 105f, mass: 44f, eccentricity: -0.27f, inclination: 0.23f, argumentOfPeriapsis: 4.2f)
                 .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.IcePlanet, 4), size: 0.9f)
                 .WithInfo(name: "Aeon-1C"));
 
