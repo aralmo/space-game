@@ -2,7 +2,7 @@ using static Raylib_cs.Raylib;
 
 public static class Drawing
 {
-    public static void DrawLineOfPoints(IEnumerable<Vector3> vectors, Color? color = null)
+    public static void DrawLineOfPoints(IEnumerable<Vector3D> vectors, Color? color = null, bool closed = true)
     {
         var v = vectors.ToArray();
         for (int i = 0; i < v.Length; i++)
@@ -11,7 +11,7 @@ public static class Drawing
         }
     }
 
-    public static void Draw3DGrid(int gridSize = 10, float gridSpacing = .5f, Vector3 position = default)
+    public static void Draw3DGrid(int gridSize = 10, float gridSpacing = .5f, Vector3D position = default)
     {
         var gridColor = Color.Gray;
         for (int i = -gridSize; i <= gridSize; i++)
@@ -21,9 +21,9 @@ public static class Drawing
         }
     }
 
-    public static void Draw2DLineOfPoints(Camera3D camera, Vector3D[] points, Color? color = null)
+    public static void Draw2DLineOfPoints(Camera3D camera, Vector3D[] points, Color? color = null, bool closed = true)
     {
-        foreach (var (a, b) in GetLines(camera, points, true))
+        foreach (var (a, b) in GetLines(camera, points, closed))
         {
             DrawLine((int)a.X, (int)a.Y, (int)b.X, (int)b.Y, color.HasValue ? color.Value : Color.DarkGray);
             // DrawCircle((int)a.X, (int)a.Y, 1, color.HasValue ? color.Value : Color.Green);

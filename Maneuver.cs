@@ -1,31 +1,25 @@
 public static class Maneuver
 {
-    public static (DateTime maneuverTime, Vector3D deltaV) CalculateTransferManeuver(CelestialBody body1, CelestialBody body2, double deltaVLimit)
+    public static Vector3D InterceptVector(OrbitingObject from, OrbitingObject to, DateTime time)
     {
-        DateTime bestTime = DateTime.UtcNow;
-        Vector3D bestDeltaV = new Vector3D();
-        double shortestTime = double.MaxValue;
+        // Get the current positions of the objects
+        var fromPosition = from.GetPosition(time);
+        var toPosition = to.GetPosition(time);
 
-        for (int days = 0; days < 365; days++)
-        {
-            DateTime currentTime = DateTime.UtcNow.AddDays(days);
-            Vector3D pos1 = body1.GetPosition(currentTime);
-            Vector3D pos2 = body2.GetPosition(currentTime);
+        // Calculate the direction vector from 'from' to 'to'
+        var direction = toPosition - fromPosition;
 
-            Vector3D relativePosition = pos2 - pos1;
-            Vector3D relativeVelocity = body2.OrbitParameters.Value.VelocityAtTime(currentTime) - body1.OrbitParameters.Value.VelocityAtTime(currentTime);
+        // Normalize the direction vector to get the unit vector
+        var normalizedDirection = direction.Normalize();
 
-            double distance = relativePosition.Length();
-            double requiredDeltaV = relativeVelocity.Length();
+        // Calculate the relative velocity needed to intercept
+        var fromVelocity = from.GetVelocity(DateTime.UtcNow);
+        var toVelocity = to.GetVelocity(DateTime.UtcNow);
+        var relativeVelocity = toVelocity - fromVelocity;
 
-            if (requiredDeltaV <= deltaVLimit && distance < shortestTime)
-            {
-                shortestTime = distance;
-                bestTime = currentTime;
-                bestDeltaV = relativeVelocity;
-            }
-        }
+        // Calculate the force to apply (this is a simplified version, actual force calculation might be more complex)
+        var forceToApply = normalizedDirection * relativeVelocity.Length();
 
-        return (bestTime, bestDeltaV);
+        return forceToApply;
     }
 }
