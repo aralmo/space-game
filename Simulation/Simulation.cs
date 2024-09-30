@@ -1,11 +1,11 @@
 public class Simulation
 {
     public DateTime SimulationTime { get; set; } = default;
-    List<CelestialBody> celestialBodies = new List<CelestialBody>();
-    public IEnumerable<CelestialBody> CelestialBodies => celestialBodies;
-    public Simulation AddCelestialBody(CelestialBody body)
+    List<OrbitingObject> orbitingBodies = new List<OrbitingObject>();
+    public IEnumerable<OrbitingObject> OrbitingBodies => orbitingBodies;
+    public Simulation AddOrbitingBody(OrbitingObject body)
     {
-        celestialBodies.Add(body);
+        orbitingBodies.Add(body);
         return this;
     }
 
@@ -13,42 +13,48 @@ public class Simulation
 
     public void Draw(Camera3D camera)
     {
-        foreach (var body in celestialBodies)
+        foreach (var obj in orbitingBodies)
         {
-            if (body.Model == null) continue;
-            var position = body.GetPosition(SimulationTime);
-            var distance = Vector3D.Distance(camera.Position, position);
-            if (distance < 1000 - body.Size)
+            if (obj is CelestialBody body)
             {
-                DrawModel(body.Model.Value, position, (float)body.Size, Color.White);
+                if (body.Model == null) continue;
+                var position = body.GetPosition(SimulationTime);
+                var distance = Vector3D.Distance(camera.Position, position);
+                if (distance < 1000 - body.Size)
+                {
+                    DrawModel(body.Model.Value, position, (float)body.Size, Color.White);
+                }
             }
         }
     }
     public void DrawFarAwayBodies(Camera3D camera)
     {
-        foreach (var body in celestialBodies)
+        foreach (var obj in orbitingBodies)
         {
-            var position = body.GetPosition(SimulationTime);
-            var distance = Vector3D.Distance(camera.Position, position);
-            if (body.Model == null || distance >= 1000 - body.Size)
+            if (obj is CelestialBody body)
             {
-                var screenPosition = GetWorldToScreen(position, camera);
-                if (screenPosition.X >= 0 && screenPosition.X <= GetScreenWidth() && screenPosition.Y >= 0 && screenPosition.Y <= GetScreenHeight())
+                var position = body.GetPosition(SimulationTime);
+                var distance = Vector3D.Distance(camera.Position, position);
+                if (body.Model == null || distance >= 1000 - body.Size)
                 {
-                    double sizeFactor = 1000 / distance;
-                    float drawSize = (float)Math.Max(1f, body.Size * sizeFactor);
-                    DrawCircle((int)double.Round(screenPosition.X), (int)double.Round(screenPosition.Y), drawSize, body.FarColor);
+                    var screenPosition = GetWorldToScreen(position, camera);
+                    if (screenPosition.X >= 0 && screenPosition.X <= GetScreenWidth() && screenPosition.Y >= 0 && screenPosition.Y <= GetScreenHeight())
+                    {
+                        double sizeFactor = 1000 / distance;
+                        float drawSize = (float)Math.Max(1f, body.Size * sizeFactor);
+                        DrawCircle((int)double.Round(screenPosition.X), (int)double.Round(screenPosition.Y), drawSize, body.FarColor);
+                    }
                 }
             }
         }
     }
-    public void DrawOrbits2D(Camera3D camera, CelestialBody? centerBody = null)
+    public void DrawOrbits2D(Camera3D camera, OrbitingObject? centerBody = null)
     {
-        foreach (var body in celestialBodies)
+        foreach (var body in orbitingBodies)
         {
             if (body.OrbitPoints != null)
             {
-                var color = (centerBody != null && centerBody == body) ? new Color(40,40,40,255) : Color.DarkGray;
+                var color = (centerBody != null && centerBody == body) ? new Color(40, 40, 40, 255) : Color.DarkGray;
                 Drawing.Draw2DLineOfPoints(camera, body.OrbitPoints!.Select(p => p + body.CentralBody!.GetPosition(SimulationTime)).ToArray(), color);
             }
         }

@@ -11,8 +11,8 @@ public static class Game
 
         var simulation = Test.DefaultSimulation();
         var targetIndex = 0;
-        var target = simulation.CelestialBodies.ElementAt(targetIndex);
-        var orbitingCamera = new OrbitingCamera(target, initialDistance: (float)target.Size * 6f, initialAngle: 0.0f);
+        var target = simulation.OrbitingBodies.ElementAt(targetIndex);
+        var orbitingCamera = new OrbitingCamera(target, initialAngle: 0.0f);
 
         while (!WindowShouldClose())
         {
@@ -23,10 +23,10 @@ public static class Game
             // Check for tab key press to cycle through targets
             if (IsKeyPressed(KeyboardKey.Tab))
             {
-                targetIndex = (targetIndex + 1) % simulation.CelestialBodies.Count();
-                target = simulation.CelestialBodies.ElementAt(targetIndex);
+                targetIndex = (targetIndex + 1) % simulation.OrbitingBodies.Count();
+                target = simulation.OrbitingBodies.ElementAt(targetIndex);
                 //todo: set target
-                orbitingCamera = new OrbitingCamera(target, initialDistance: (float)target.Size * 6f, initialAngle: 0.0f);
+                orbitingCamera = new OrbitingCamera(target, initialAngle: 0.0f);
             }
 
             orbitingCamera.Update(simulation.SimulationTime);

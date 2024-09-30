@@ -3,23 +3,33 @@ public class OrbitingCamera
     private Camera3D camera;
     private float cameraAngle;
     private float cameraDistance;
-    public CelestialBody Target{get; private set;}
+    public OrbitingObject Target{get; private set;}
     private DateTime lastUpdateTime;
 
-    public OrbitingCamera(CelestialBody target, float initialDistance, float initialAngle)
+    public OrbitingCamera(OrbitingObject target, float initialAngle)
     {
+        var distance = DistanceFor(target);
         this.Target = target;
         camera = new Camera3D
         {
-            Position = new Vector3(0.0f, 2.0f, -initialDistance),
+            Position = new Vector3(0.0f, 2.0f, -distance),
             Target = target.GetPosition(DateTime.UtcNow),
             Up = new Vector3(0.0f, 1.0f, 0.0f),
             FovY = 60.0f,
             Projection = CameraProjection.Perspective
         };
-        cameraDistance = initialDistance;
+        cameraDistance = distance;
         cameraAngle = initialAngle;
         lastUpdateTime = DateTime.UtcNow;
+    }
+
+    private float DistanceFor(OrbitingObject target)
+    {
+        if (target is CelestialBody body){
+            return body.Size * 6f;
+        }else{
+            return 6f;
+        }
     }
 
     public Camera3D GetCamera() => camera;

@@ -14,13 +14,13 @@ public static class SetTarget
         var backgroundStars = GenerateStarPositions(1000, 10000f);
 
         var simulation = Test.DefaultSimulation();
-        var planet = simulation.CelestialBodies.Skip(1).First();
+        var planet = simulation.OrbitingBodies.Skip(1).First();
         var orbit = Solve.CircularOrbit(10, planet.Mass, lastFrame);
 
         var targetIndex = 1;
-        var cameraTarget = simulation.CelestialBodies.ElementAt(targetIndex);
+        var cameraTarget = simulation.OrbitingBodies.ElementAt(targetIndex);
         CelestialBody? target = null;
-        var orbitingCamera = new OrbitingCamera(cameraTarget, initialDistance: 50f, initialAngle: 0.0f);
+        var orbitingCamera = new OrbitingCamera(cameraTarget, initialAngle: 0.0f);
         var spaceship_vel = orbit.VelocityAtTime(lastFrame) + planet.OrbitParameters.Value.VelocityAtTime(lastFrame);
         var spaceship_pos = orbit.PositionAtTime(lastFrame) + planet.GetPosition(lastFrame);
 
@@ -34,9 +34,18 @@ public static class SetTarget
             // Check for tab key press to cycle through targets
             if (IsKeyPressed(KeyboardKey.Tab))
             {
-                targetIndex = (targetIndex + 1) % simulation.CelestialBodies.Count();
-                cameraTarget = simulation.CelestialBodies.ElementAt(targetIndex);
-                orbitingCamera = new OrbitingCamera(cameraTarget, initialDistance: (float)cameraTarget.Size * 6f, initialAngle: 0.0f);
+                targetIndex = (targetIndex + 1) % simulation.OrbitingBodies.Count();
+                cameraTarget = simulation.OrbitingBodies.ElementAt(targetIndex);
+                float distance;
+                if (cameraTarget is CelestialBody body)
+                {
+                    distance = body.Size * 6f;
+                }
+                else
+                {
+                    distance = 6f;
+                }
+                orbitingCamera = new OrbitingCamera(cameraTarget, initialAngle: 0.0f);
             }
             if (IsMouseButtonDown(MouseButton.Left))
             {
@@ -46,7 +55,7 @@ public static class SetTarget
             }
 
             orbitingCamera.Update(simulation.SimulationTime);
-            var opoints  = Solve.OrbitPoints(orbit,100).ToArray();
+            var opoints = Solve.OrbitPoints(orbit, 100).ToArray();
             var camera = orbitingCamera.GetCamera();
             BeginDrawing();
             spaceship_pos += spaceship_vel * delta_time;
@@ -55,10 +64,10 @@ public static class SetTarget
             simulation.DrawFarAwayBodies(camera);
             simulation.DrawOrbits2D(camera, cameraTarget);
             BeginMode3D(camera);
-            DrawLineOfPoints(opoints.Select(p =>(Vector3) p+planet.GetPosition(simulation.SimulationTime)));
+            DrawLineOfPoints(opoints.Select(p => (Vector3)p + planet.GetPosition(simulation.SimulationTime)));
             simulation.Draw(camera);
             DrawCube(spaceship_pos, .5f, .5f, .5f, Color.Blue);
-            foreach (var body in simulation.CelestialBodies)
+            foreach (var body in simulation.OrbitingBodies)
             {
                 var bodyPosition = body.GetPosition(simulation.SimulationTime);
                 if (body.OrbitParameters != null)
@@ -73,47 +82,51 @@ public static class SetTarget
             DrawLine3D(spaceship_pos, spaceshipEndPos, Color.Green);
             EndMode3D();
 
-            foreach (var body in simulation.CelestialBodies)
+            foreach (var obj in simulation.OrbitingBodies)
             {
-                var bodyPosition = body.GetPosition(simulation.SimulationTime);
-                var screenPos = GetWorldToScreen(bodyPosition, camera);
-                var distance = Vector3.Distance(spaceship_pos, bodyPosition);
-                var influence = G * body.Mass / (distance * distance);
+                if (obj is CelestialBody body)
+                {
+                    var bodyPosition = body.GetPosition(simulation.SimulationTime);
+                    var screenPos = GetWorldToScreen(bodyPosition, camera);
+                    var distance = Vector3.Distance(spaceship_pos, bodyPosition);
+                    var influence = G * body.Mass / (distance * distance);
 
-               (_, spaceship_vel) = Solve.ApplyGravity(
-                    position: spaceship_pos,
-                    velocity: spaceship_vel,
-                    planetPosition: body.GetPosition(simulation.SimulationTime),
-                    planetMass: body.Mass,
-                    stepTimeSeconds: delta_time);
+                    (_, spaceship_vel) = Solve.ApplyGravity(
+                         position: spaceship_pos,
+                         velocity: spaceship_vel,
+                         planetPosition: body.GetPosition(simulation.SimulationTime),
+                         planetMass: body.Mass,
+                         stepTimeSeconds: delta_time);
 
-                DrawText($"{body.Name}: {influence:F4}", (int)screenPos.X, (int)screenPos.Y, 20, Color.White);
+                    DrawText($"{body.Name}: {influence:F4}", (int)Math.Round(screenPos.X), (int)Math.Round(screenPos.Y), 20, Color.White);
+                }
             }
             //DrawEdit(ref orb);
             EndDrawing();
         }
-
         CloseWindow();
     }
 
     static CelestialBody? ClickedBody(Camera3D camera, Simulation simulation, int mouseX, int mouseY)
     {
-        foreach (var body in simulation.CelestialBodies)
+        foreach (var obj in simulation.OrbitingBodies)
         {
-            var bpos = body.GetPosition(simulation.SimulationTime);
-            var screenPos = GetWorldToScreen(bpos, camera);
-            var distanceToMouse = Math.Sqrt(Math.Pow(screenPos.X - mouseX, 2) + Math.Pow(screenPos.Y - mouseY, 2));
-            var distanceToCamera = Vector3.Distance(camera.Position, bpos);
-            double sizeFactor = 1000 / distanceToCamera;
-            float drawSize = (float)Math.Max(1f, body.Size * sizeFactor);
-            if (distanceToMouse <= drawSize)
+            if (obj is CelestialBody body)
             {
-                return body;
+                var bpos = body.GetPosition(simulation.SimulationTime);
+                var screenPos = GetWorldToScreen(bpos, camera);
+                var distanceToMouse = Math.Sqrt(Math.Pow(screenPos.X - mouseX, 2) + Math.Pow(screenPos.Y - mouseY, 2));
+                var distanceToCamera = Vector3.Distance(camera.Position, bpos);
+                double sizeFactor = 1000 / distanceToCamera;
+                float drawSize = (float)Math.Max(1f, body.Size * sizeFactor);
+                if (distanceToMouse <= drawSize)
+                {
+                    return body;
+                }
             }
         }
         return null;
     }
-
     private static unsafe void DrawBackground(Camera3D camera, List<Vector3> backgroundStars, Simulation simulation)
     {
         ClearBackground(Color.Black);
