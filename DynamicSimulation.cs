@@ -31,12 +31,31 @@ public class DynamicSimulation
         Position += Velocity * deltaTime;
     }
 
-    public IEnumerable<Vector3D> PredictedPath(Simulation sim, int seconds = 120, int fps = 60, OrbitingObject? planeOfReference = null)
+    public (IEnumerable<Vector3D> orbit, OrbitingObject? plane) PredictedPath(Simulation sim, int seconds = 120, int fps = 60)
     {
         var predictedPath = new List<Vector3D>();
         var tempPosition = Position;
         var tempVelocity = Velocity;
         var tempSimulationTime = sim.SimulationTime;
+
+        CelestialBody? planeOfReference = null;
+        double highestInfluence = double.MinValue;
+
+        foreach (var obj in sim.OrbitingBodies)
+        {
+            if (obj is CelestialBody body)
+            {
+                var bodyPosition = body.GetPosition(sim.SimulationTime);
+                var distance = Vector3.Distance(Position, bodyPosition);
+                var influence = Constants.G * body.Mass / (distance * distance);
+                if (influence < Constants.MIN_INFLUENCE) continue;
+                if (influence > highestInfluence)
+                {
+                    highestInfluence = influence;
+                    planeOfReference = body;
+                }
+            }
+        }
 
         for (int i = 0; i < seconds * fps; i++)
         {
@@ -48,15 +67,16 @@ public class DynamicSimulation
                 if (obj is CelestialBody body)
                 {
                     var bodyPosition = body.GetPosition(tempSimulationTime);
-                    var distance = Vector3.Distance(tempPosition, bodyPosition);
+                    var distance = Vector3D.Distance(tempPosition, bodyPosition);
                     var influence = G * body.Mass / (distance * distance);
                     if (influence < MIN_INFLUENCE) continue;
-                    (_, tempVelocity) = Solve.ApplyGravity(
-                        position: tempPosition,
-                        velocity: tempVelocity,
-                        planetPosition: body.GetPosition(tempSimulationTime),
-                        planetMass: body.Mass,
-                        stepTimeSeconds: 1.0f / fps);
+
+                    // Calculate the gravitational force
+                    var direction = (bodyPosition - tempPosition).Normalize();
+                    var force = direction * influence;
+
+                    // Update the velocity based on the force
+                    tempVelocity += force * (1.0f / fps);
                 }
             }
 
@@ -77,6 +97,6 @@ public class DynamicSimulation
             }
         }
 
-        return predictedPath;
+        return (predictedPath, planeOfReference);
     }
 }

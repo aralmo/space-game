@@ -1,9 +1,10 @@
 public class OrbitingCamera
 {
     private Camera3D camera;
-    private float cameraAngle;
+    private float cameraAngleX;
+    private float cameraAngleY;
     private float cameraDistance;
-    public OrbitingObject Target{get; private set;}
+    public OrbitingObject Target { get; private set; }
     private DateTime lastUpdateTime;
 
     public OrbitingCamera(OrbitingObject target, float initialAngle)
@@ -19,15 +20,19 @@ public class OrbitingCamera
             Projection = CameraProjection.Perspective
         };
         cameraDistance = distance;
-        cameraAngle = initialAngle;
+        cameraAngleX = initialAngle;
+        cameraAngleY = 0.0f;
         lastUpdateTime = DateTime.UtcNow;
     }
 
     private float DistanceFor(OrbitingObject target)
     {
-        if (target is CelestialBody body){
+        if (target is CelestialBody body)
+        {
             return body.Size * 6f;
-        }else{
+        }
+        else
+        {
             return 6f;
         }
     }
@@ -40,13 +45,11 @@ public class OrbitingCamera
         lastUpdateTime = simulationTime;
 
         // Update camera rotation
-        if (IsKeyDown(KeyboardKey.A))
+        if (IsMouseButtonDown(MouseButton.Right))
         {
-            cameraAngle -= 1.0f * deltaTime;
-        }
-        if (IsKeyDown(KeyboardKey.D))
-        {
-            cameraAngle += 1.0f * deltaTime;
+            cameraAngleX -= GetMouseDelta().X * 0.005f;
+            cameraAngleY += GetMouseDelta().Y * 0.005f;
+            cameraAngleY = Math.Clamp(cameraAngleY, -MathF.PI / 2, MathF.PI / 2); // Limit vertical rotation
         }
 
         // Update camera zoom
@@ -55,20 +58,10 @@ public class OrbitingCamera
 
         // Update camera position based on angle and distance
         var targetPosition = Target.GetPosition(simulationTime);
-        camera.Position.X =(float) (targetPosition.X + Math.Sin(cameraAngle) * cameraDistance);
-        camera.Position.Z =(float) (targetPosition.Z + Math.Cos(cameraAngle) * cameraDistance);
-
-        // Adjust camera Y position based on zoom level
-        if (cameraDistance > 10.0f) // Threshold for zooming out
-        {
-            camera.Position.Y =(float) (targetPosition.Y + cameraDistance - 10.0f); // Move camera up as it zooms out
-        }
-        else
-        {
-            camera.Position.Y =(float) (targetPosition.Y + 2.0f); // Default Y position
-        }
+        camera.Position.X = (float)(targetPosition.X + Math.Sin(cameraAngleX) * Math.Cos(cameraAngleY) * cameraDistance);
+        camera.Position.Y = (float)(targetPosition.Y + Math.Sin(cameraAngleY) * cameraDistance);
+        camera.Position.Z = (float)(targetPosition.Z + Math.Cos(cameraAngleX) * Math.Cos(cameraAngleY) * cameraDistance);
 
         camera.Target = targetPosition;
     }
 }
-

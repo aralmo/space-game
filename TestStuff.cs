@@ -1,5 +1,28 @@
 public static class Test
 {
+    public static Simulation DefaultSimulation2()
+    {
+        var simulation = new Simulation();
+        var sun = CelestialBody
+            .CreateCelestial(Vector3D.Zero, 100000f)
+            .WithModelVisuals(model: null, size: 60f, Color.Yellow)
+            .WithInfo(name: "Aeon Prime");
+
+        var planet = CelestialBody
+            .CreateCelestial(centralBody: sun, radius: 2000f, mass: 900f, eccentricity: 0.05f)
+            .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.EarthLike, 1), size: 4f, Color.Blue)
+            .WithInfo(name: "Aeon-1");
+
+        simulation
+            .AddOrbitingBody(sun)
+            .AddOrbitingBody(planet)
+            .AddOrbitingBody(CelestialBody
+                .CreateCelestial(centralBody: planet, radius: 190f, mass: 90f)
+                .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.Moon, 2), size: 1f)
+                .WithInfo(name: "Aeon-1A"));
+
+        return simulation;
+    }
     public static Simulation DefaultSimulation()
     {
         var simulation = new Simulation();
