@@ -16,6 +16,7 @@ public class DynamicSimulation
                 var bodyPosition = body.GetPosition(time ?? simulation.SimulationTime);
                 var distance = Vector3.Distance(Position, bodyPosition);
                 var influence = G * body.Mass / (distance * distance);
+                if (influence < MIN_INFLUENCE) continue;
                 (_, Velocity) = Solve.ApplyGravity(
                     position: Position,
                     velocity: Velocity,
@@ -30,7 +31,7 @@ public class DynamicSimulation
         Position += Velocity * deltaTime;
     }
 
-    public IEnumerable<Vector3D> PredictedPath(Simulation sim, int seconds = 120, int fps = 60)
+    public IEnumerable<Vector3D> PredictedPath(Simulation sim, int seconds = 120, int fps = 60, OrbitingObject? planeOfReference = null)
     {
         var predictedPath = new List<Vector3D>();
         var tempPosition = Position;
@@ -49,6 +50,7 @@ public class DynamicSimulation
                     var bodyPosition = body.GetPosition(tempSimulationTime);
                     var distance = Vector3.Distance(tempPosition, bodyPosition);
                     var influence = G * body.Mass / (distance * distance);
+                    if (influence < MIN_INFLUENCE) continue;
                     (_, tempVelocity) = Solve.ApplyGravity(
                         position: tempPosition,
                         velocity: tempVelocity,
@@ -63,7 +65,16 @@ public class DynamicSimulation
             tempSimulationTime = tempSimulationTime.AddSeconds(1.0 / fps);
 
             // Add the new position to the predicted path
-            predictedPath.Add(tempPosition);
+            if (planeOfReference != null)
+            {
+                var referencePosition = planeOfReference.GetPosition(tempSimulationTime);
+                var vector = tempPosition - referencePosition;
+                predictedPath.Add(vector);
+            }
+            else
+            {
+                predictedPath.Add(tempPosition);
+            }
         }
 
         return predictedPath;
