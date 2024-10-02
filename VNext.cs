@@ -9,7 +9,7 @@ public static class VNext
     {
         InitWindow(1000, 1000, "sim");
 
-        SetTargetFPS(60);
+        SetTargetFPS(TARGET_FPS);
         DateTime lastFrame = DateTime.UtcNow;
         var backgroundStars = GenerateStarPositions(1000, 10000f);
 
@@ -26,19 +26,30 @@ public static class VNext
         Vector3D[] predictedOrbit = Array.Empty<Vector3D>();
         OrbitingObject bodyOfReference = planet;
         bool needsUpdate = false;
+        double currentOrbitT = 1000;
         var predictionThread = new Thread(() =>
         {
             while (true)
             {
-                var (o, p) = spaceshipSimulation.PredictedPath(simulation, 1000, 30);
+                var (o, p) = spaceshipSimulation.PredictedPath(simulation, (int)currentOrbitT + 1, TARGET_FPS);
                 if (planeOfReference == null || (p != null && p != planeOfReference)) planeOfReference = p;
                 predictedOrbit = o.ToArray();
+                if (planeOfReference != null)
+                {
+                    var orbit = Solve.KeplarOrbit(
+                        spaceshipSimulation.Position - planeOfReference.GetPosition(simulation.SimulationTime),
+                        spaceshipSimulation.Velocity - planeOfReference.GetVelocity(simulation.SimulationTime),
+                        planeOfReference.Mass
+                    );
+                    if (orbit.Type == OrbitType.Elliptical) currentOrbitT = orbit.T;
+                }
 
-                for(int i = 0; i < 200; i ++){
-                    Thread.Sleep(10); 
+                for (int i = 0; i < 200; i++)
+                {
+                    Thread.Sleep(10);
                     if (needsUpdate) break;
                 }
-                needsUpdate = false;// Adjust the sleep duration as needed
+                needsUpdate = false;
             }
         });
         predictionThread.IsBackground = true;
@@ -105,34 +116,44 @@ public static class VNext
 
             if (IsKeyDown(KeyboardKey.W))
             {
-                needsUpdate =true;
+                needsUpdate = true;
                 spaceshipSimulation.Velocity += forwardVector * delta_time * SHIP_ACCELERATION;
             }
             if (IsKeyDown(KeyboardKey.S))
             {
-                needsUpdate =true;
+                needsUpdate = true;
                 spaceshipSimulation.Velocity -= forwardVector * delta_time * SHIP_ACCELERATION;
             }
             if (IsKeyDown(KeyboardKey.D))
             {
-                needsUpdate =true;
+                needsUpdate = true;
                 spaceshipSimulation.Velocity += qVector * delta_time * SHIP_ACCELERATION;
             }
             if (IsKeyDown(KeyboardKey.A))
             {
-                needsUpdate =true;
+                needsUpdate = true;
                 spaceshipSimulation.Velocity -= qVector * delta_time * SHIP_ACCELERATION;
             }
             if (IsKeyDown(KeyboardKey.Q))
             {
-                needsUpdate =true;
+                needsUpdate = true;
                 spaceshipSimulation.Velocity += upVector * delta_time * SHIP_ACCELERATION;
             }
             if (IsKeyDown(KeyboardKey.Z))
             {
-                needsUpdate =true;
+                needsUpdate = true;
                 spaceshipSimulation.Velocity -= upVector * delta_time * SHIP_ACCELERATION;
             }
+            if (IsKeyDown(KeyboardKey.C) && planeOfReference != null)
+            {
+                var rSpeed = Solve.OrbitVelocity(Vector3D.Distance(planeOfReference.GetPosition(simulation.SimulationTime), spaceshipSimulation.Position), planeOfReference.Mass);
+                var mag = rSpeed - (spaceshipSimulation.Velocity - planeOfReference.GetVelocity(simulation.SimulationTime)).Magnitude();
+                var fv = (forwardVector * mag).Normalize();
+
+                spaceshipSimulation.Velocity += fv * delta_time * SHIP_ACCELERATION;
+                needsUpdate = true;
+            }
+
             DrawLine3D(spaceshipSimulation.Position, forwardEndPos, Color.Green); // Forward vector in green
             DrawLine3D(spaceshipSimulation.Position, upEndPos, Color.Blue); // Up vector in blue
             DrawLine3D(spaceshipSimulation.Position, qEndPos, Color.Purple); // Q vector in purple
@@ -180,11 +201,34 @@ public static class VNext
                     DrawText($"{influence:F4}", (int)screenPos.X, (int)screenPos.Y, 20, Color.White);
                 }
             }
+            DrawText($"{predictedOrbit.Length}", 10, 10, 20, Color.Red);
+            if (predictedOrbit.Length > 400)
+            {
+                predictedOrbit = reduceResolution(predictedOrbit, 400).ToArray();
+            }
             if (bodyOfReference != null) Draw2DLineOfPoints(camera, predictedOrbit.Select(p => p + bodyOfReference.GetPosition(simulation.SimulationTime)).ToArray(), Color.Beige, false);
             //DrawEdit(ref orb);
+
+            if (planeOfReference != null)
+            {
+                var radialDirection = (spaceshipSimulation.Position - planeOfReference.GetPosition(simulation.SimulationTime)).Normalize();
+                var tangentialDirection = Vector3D.Cross(radialDirection, new Vector3D(0, 1, 0)).Normalize();
+                DrawText($"{tangentialDirection}", 10, 50, 20, Color.White);
+            }
             EndDrawing();
         }
         CloseWindow();
+    }
+    static IEnumerable<Vector3D> reduceResolution(Vector3D[] points, int maxResolution)
+    {
+        var step = points.Length / maxResolution;
+        yield return points[0];
+        for (int i = 1; i < points.Length - 1; i++)
+        {
+            if (i % step != 0) continue;
+            yield return points[i];
+        }
+        yield return points[points.Length - 1];
     }
 
     static CelestialBody? ClickedBody(Camera3D camera, Simulation simulation, int mouseX, int mouseY)

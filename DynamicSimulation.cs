@@ -31,8 +31,13 @@ public class DynamicSimulation
         Position += Velocity * deltaTime;
     }
 
-    public (IEnumerable<Vector3D> orbit, OrbitingObject? plane) PredictedPath(Simulation sim, int seconds = 120, int fps = 60)
+    public (IEnumerable<Vector3D> orbit, OrbitingObject? plane) PredictedPath(Simulation sim, int seconds = 120, int fps = 60, int maxIterations = 60000)
     {
+        float step = 1f;
+        if (seconds * fps > maxIterations){
+            step = (float) (seconds * fps) / maxIterations;
+        }
+
         var predictedPath = new List<Vector3D>();
         var tempPosition = Position;
         var tempVelocity = Velocity;
@@ -56,9 +61,7 @@ public class DynamicSimulation
                 }
             }
         }
-
-        for (int i = 0; i < seconds * fps; i++)
-        {
+        for (float t = 0f; t < seconds * fps; t += step){
             // Update the temporary simulation time
 
             // Apply gravity to update velocity
@@ -76,13 +79,13 @@ public class DynamicSimulation
                     var force = direction * influence;
 
                     // Update the velocity based on the force
-                    tempVelocity += force * (1.0f / fps);
+                    tempVelocity += force * (step / fps);
                 }
             }
 
             // Update position based on the new velocity
-            tempPosition += tempVelocity * (1.0 / fps);
-            tempSimulationTime = tempSimulationTime.AddSeconds(1.0 / fps);
+            tempPosition += tempVelocity * (step / fps);
+            tempSimulationTime = tempSimulationTime.AddSeconds(step / fps);
 
             // Add the new position to the predicted path
             if (planeOfReference != null)

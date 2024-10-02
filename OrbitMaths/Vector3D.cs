@@ -37,10 +37,7 @@ public struct Vector3D
         return Math.Sqrt(X * X + Y * Y + Z * Z);
     }
 
-    public double Length()
-    {
-        return Math.Sqrt(X * X + Y * Y + Z * Z);
-    }
+    public double Length() => Magnitude();
 
     public Vector3D Normalize()
     {
