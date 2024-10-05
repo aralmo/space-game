@@ -23,6 +23,7 @@ public static class VNext
         var spaceshipSimulation = new DynamicSimulation(ship.GetPosition(lastFrame), ship.GetVelocity(lastFrame));
         string showtext = string.Empty;
         OrbitingObject? planeOfReference = null;
+        PredictedPath? prediction = null;
         Vector3D[] predictedOrbit = Array.Empty<Vector3D>();
         OrbitingObject bodyOfReference = planet;
         bool needsUpdate = false;
@@ -31,9 +32,10 @@ public static class VNext
         {
             while (true)
             {
-                var (o, p) = spaceshipSimulation.PredictedPath(simulation, (int)currentOrbitT + 1, TARGET_FPS);
-                if (planeOfReference == null || (p != null && p != planeOfReference)) planeOfReference = p;
-                predictedOrbit = o.ToArray();
+                var predicted = spaceshipSimulation.PredictedPath(simulation, (int)currentOrbitT + 1, TARGET_FPS);
+                prediction = predicted;
+                if (planeOfReference == null || (predicted.CurrentBodyOfInfluence != null && predicted.CurrentBodyOfInfluence != planeOfReference)) planeOfReference = predicted.CurrentBodyOfInfluence;
+                predictedOrbit = predicted.Points.ToArray();
                 if (planeOfReference != null)
                 {
                     var orbit = Solve.KeplarOrbit(
@@ -41,7 +43,10 @@ public static class VNext
                         spaceshipSimulation.Velocity - planeOfReference.GetVelocity(simulation.SimulationTime),
                         planeOfReference.Mass
                     );
-                    if (orbit.Type == OrbitType.Elliptical) currentOrbitT = orbit.T;
+                    if (orbit.Type == OrbitType.Elliptical)
+                    {
+                        currentOrbitT = orbit.T;
+                    }
                 }
 
                 for (int i = 0; i < 200; i++)
@@ -100,7 +105,7 @@ public static class VNext
             spaceshipSimulation.UpdatePosition(delta_time);
 
             DrawBackground(camera, backgroundStars, simulation);
-            simulation.DrawFarAwayBodies(camera);
+            simulation.Draw2D(camera);
             simulation.DrawOrbits2D(camera, cameraTarget);
             BeginMode3D(camera);
             var forwardVector = spaceshipSimulation.Velocity.Normalize();
@@ -110,9 +115,9 @@ public static class VNext
                 forwardVector = (spaceshipSimulation.Velocity - planeOfReference.GetVelocity(simulation.SimulationTime)).Normalize();
             }
             var qVector = Vector3D.Cross(forwardVector, upVector).Normalize();
-            var forwardEndPos = spaceshipSimulation.Position + forwardVector * 10f; // Scale the vector for visibility
-            var upEndPos = spaceshipSimulation.Position + upVector * 10f; // Scale the vector for visibility
-            var qEndPos = spaceshipSimulation.Position + qVector * 10f; // Scale the vector for visibility
+            var forwardEndPos = spaceshipSimulation.Position + forwardVector * 10f;
+            var upEndPos = spaceshipSimulation.Position + upVector * 10f;
+            var qEndPos = spaceshipSimulation.Position + qVector * 10f;
 
             if (IsKeyDown(KeyboardKey.W))
             {
@@ -154,9 +159,9 @@ public static class VNext
                 needsUpdate = true;
             }
 
-            DrawLine3D(spaceshipSimulation.Position, forwardEndPos, Color.Green); // Forward vector in green
-            DrawLine3D(spaceshipSimulation.Position, upEndPos, Color.Blue); // Up vector in blue
-            DrawLine3D(spaceshipSimulation.Position, qEndPos, Color.Purple); // Q vector in purple
+            DrawLine3D(spaceshipSimulation.Position, forwardEndPos, Color.Green);
+            DrawLine3D(spaceshipSimulation.Position, upEndPos, Color.Blue);
+            DrawLine3D(spaceshipSimulation.Position, qEndPos, Color.Purple);
             //DrawLineOfPoints(opoints.Select(p => (Vector3)p + planet.GetPosition(simulation.SimulationTime)));
             simulation.Draw(camera);
             DrawCube(spaceshipSimulation.Position, .5f, .5f, .5f, Color.Blue);
@@ -206,15 +211,37 @@ public static class VNext
             {
                 predictedOrbit = reduceResolution(predictedOrbit, 400).ToArray();
             }
-            if (bodyOfReference != null) Draw2DLineOfPoints(camera, predictedOrbit.Select(p => p + bodyOfReference.GetPosition(simulation.SimulationTime)).ToArray(), Color.Beige, false);
+            if (bodyOfReference != null)
+            {
+                Draw2DLineOfPoints(camera, predictedOrbit.Select(p => p + bodyOfReference.GetPosition(simulation.SimulationTime)).ToArray(), Color.Beige, false);
+            }
             //DrawEdit(ref orb);
 
-            if (planeOfReference != null)
+            if (prediction != null)
             {
-                var radialDirection = (spaceshipSimulation.Position - planeOfReference.GetPosition(simulation.SimulationTime)).Normalize();
-                var tangentialDirection = Vector3D.Cross(radialDirection, new Vector3D(0, 1, 0)).Normalize();
-                DrawText($"{tangentialDirection}", 10, 50, 20, Color.White);
+                foreach (var closest in prediction.Value.ClosestToBodyPositions)
+                {
+                    if (planeOfReference.InHierarchy(closest.Body)) continue;
+                    var distance = Vector3D.Distance(camera.Position, closest.BodyPosition);
+                    double sizeFactor = 1000 / distance;
+                    float size = 1f;
+                    if (closest.Body is CelestialBody celestial)
+                    {
+                        size = celestial.Size;
+                    }
+                    float drawSize = (float)Math.Max(1f, size * sizeFactor);
+                    var p1 = closest.BodyPosition + planeOfReference.GetPosition(simulation.SimulationTime);
+                    var p2 = closest.ShipPosition + planeOfReference.GetPosition(simulation.SimulationTime);
+                    if (Vector3D.Distance(p1, p2) < MIN_CAPTURE_DISTANCE)
+                    {
+                        var pos = GetWorldToScreen(p1, camera);
+                        var shipP = GetWorldToScreen(p2, camera);
+                        DrawCircle((int)float.Round(pos.X), (int)float.Round(pos.Y), Math.Max(4, drawSize), Color.Orange);
+                        DrawCircle((int)float.Round(shipP.X), (int)float.Round(shipP.Y), Math.Max(4, drawSize), Color.Blue);
+                    }
+                }
             }
+
             EndDrawing();
         }
         CloseWindow();

@@ -11,6 +11,8 @@ public class OrbitingObject
         => OrbitParameters != null
             ? OrbitParameters.Value.VelocityAtTime(time) + CentralBody!.GetVelocity(time)
             : Vector3D.Zero;
+
+    public bool InHierarchy(OrbitingObject o) => o == this || (CentralBody != null && CentralBody.InHierarchy(o));
     public double GravitationalParameter { get => G * Mass; }
     public Vector3D[]? OrbitPoints { get; protected set; }
     public OrbitParameters? OrbitParameters { get; protected set; }

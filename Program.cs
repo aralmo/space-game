@@ -7,7 +7,7 @@ internal class Program
 {
     private static unsafe void Main(string[] args)
     {
-        //Game.Run();
-        VNext.Run();
+        Game.Run();
+        //VNext.Run();
     }
 }

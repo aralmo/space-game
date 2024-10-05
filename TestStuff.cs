@@ -5,7 +5,7 @@ public static class Test
         var simulation = new Simulation();
         var sun = CelestialBody
             .CreateCelestial(Vector3D.Zero, 100000f)
-            .WithModelVisuals(model: null, size: 60f, Color.Yellow)
+            .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.YellowSun, 12), size: 60f, Color.Yellow)
             .WithInfo(name: "Aeon Prime");
 
         var planet = CelestialBody
@@ -17,9 +17,14 @@ public static class Test
             .AddOrbitingBody(sun)
             .AddOrbitingBody(planet)
             .AddOrbitingBody(CelestialBody
-                .CreateCelestial(centralBody: planet, radius: 190f, mass: 90f)
+                .CreateCelestial(centralBody: planet, radius: 85f, mass: 90f)
                 .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.Moon, 2), size: 1f)
-                .WithInfo(name: "Aeon-1A"));
+                .WithInfo(name: "Aeon-1A"))
+            .AddOrbitingBody(CelestialBody
+                .CreateCelestial(centralBody: planet, radius: 220f, mass: 100f,.1f, 1.7f,Math.PI)
+                .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.IcePlanet, 3), size: 2f)
+                .WithInfo(name: "Aeon-1B"));
+
 
         return simulation;
     }

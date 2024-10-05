@@ -1,6 +1,7 @@
 public class Simulation
 {
-    public DateTime SimulationTime { get; set; } = default;
+    int Speed = 1;
+    public DateTime SimulationTime;
     List<OrbitingObject> orbitingBodies = new List<OrbitingObject>();
     public IEnumerable<OrbitingObject> OrbitingBodies => orbitingBodies;
     public Simulation AddOrbitingBody(OrbitingObject body)
@@ -8,10 +9,36 @@ public class Simulation
         orbitingBodies.Add(body);
         return this;
     }
+    List<DynamicSimulation> dynamicSimulations = new();
+    public Simulation RegisterDynamicForUpdate(DynamicSimulation simulation)
+    {
+        dynamicSimulations.Add(simulation);
+        return this;
+    }
+    public void Update()
+    {
+        float deltaTime = 1.0f / TARGET_FPS;
+        for (int i = 0; i < Speed; i++)
+        {
+            SimulationTime = SimulationTime.AddSeconds(deltaTime);
+            foreach (var ds in dynamicSimulations)
+            {
+                ds.ApplyGravity(SimulationTime, deltaTime);
+                ds.UpdatePosition(deltaTime);
+            }
+        }
+    }
 
-    //todo: everything below this point should go to a SimulationVisuals of some kind
 
-    public void Draw(Camera3D camera)
+
+
+
+
+
+
+
+
+    public void Draw3D(Camera3D camera)
     {
         foreach (var obj in orbitingBodies)
         {
@@ -27,7 +54,7 @@ public class Simulation
             }
         }
     }
-    public void DrawFarAwayBodies(Camera3D camera)
+    public void Draw2D(Camera3D camera)
     {
         foreach (var obj in orbitingBodies)
         {

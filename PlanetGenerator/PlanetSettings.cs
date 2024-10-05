@@ -2,6 +2,18 @@
 
 public static class PlanetSettings
 {
+    public static readonly PlanetGenerationSettings YellowSun = new PlanetGenerationSettings(
+    new (float height, Color color)[]
+    {
+            (0.4f, new Color(255, 255, 0, 255)),   // Full Yellow
+            (0.6f, new Color(255, 245, 0, 255)),   // Bright Yellow
+            (0.85f, new Color(255, 235, 0, 255)),  // Pale Yellow
+            (1.0f, new Color(255, 225, 0, 255))    // Orange (Orange)
+    },
+    NoiseType.Perlin,
+    0f
+    );
+
     public static readonly PlanetGenerationSettings EarthLike = new PlanetGenerationSettings(
         new (float height, Color color)[]
         {
