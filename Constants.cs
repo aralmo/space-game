@@ -6,4 +6,5 @@ public static class Constants{
         public const int TARGET_FPS = 60;
         public const float MIN_CAPTURE_DISTANCE = 20F;
         public const int ORBIT_SLOW_PREDICT_TIME_SECONDS = 2;
+        public const int FONT_SIZE = 20;
 }

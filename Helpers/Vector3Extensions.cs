@@ -48,4 +48,8 @@ public static class Vector3Extensions
 
         return (pitch, yaw, roll);
     }
+
+    public static bool IsBehindCamera(this Vector3D point, Camera3D camera)
+    => Vector3.Dot(Vector3.Normalize(point - camera.Position), camera.Target - camera.Position) <= 0;
+
 }

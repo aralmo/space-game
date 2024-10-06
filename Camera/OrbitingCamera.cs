@@ -1,13 +1,14 @@
-public class OrbitingCamera
+public class OrbitingCamera : ICameraController
 {
     private Camera3D camera;
     private float cameraAngleX;
+    private readonly Simulation? simulation;
     private float cameraAngleY;
     private float cameraDistance;
     bool isDynamicTarget = false;
     OrbitingObject? TargetBody { get; set; }
     DynamicSimulation? TargetDynamic { get; set; }
-    public OrbitingCamera(OrbitingObject? target = null, float initialAngle = 0)
+    public OrbitingCamera(OrbitingObject? target = null, (float x, float y) initialAngle = default, Simulation? simulation = null)
     {
         var distance = DistanceFor(target);
         this.TargetBody = target;
@@ -20,7 +21,12 @@ public class OrbitingCamera
             Projection = CameraProjection.Perspective
         };
         cameraDistance = distance;
-        cameraAngleX = initialAngle;
+        if (initialAngle != default)
+        {
+            cameraAngleX = initialAngle.x;
+            cameraAngleY = initialAngle.y;
+        }
+        this.simulation = simulation;
         cameraAngleY = 0.0f;
     }
 
@@ -44,12 +50,13 @@ public class OrbitingCamera
         this.TargetBody = target;
         isDynamicTarget = false;
     }
-    public void SetTarget(DynamicSimulation target)
+    public OrbitingCamera SetTarget(DynamicSimulation target)
     {
         this.TargetDynamic = target;
         isDynamicTarget = true;
+        return this;
     }
-    public void Update(DateTime simulationTime)
+    public void Update()
     {
         // Update camera rotation
         if (IsMouseButtonDown(MouseButton.Right))
@@ -64,7 +71,7 @@ public class OrbitingCamera
         cameraDistance = MathF.Max(cameraDistance, 2.0f); // Prevent zooming too close
 
         // Update camera position based on angle and distance
-        var targetPosition = isDynamicTarget ? TargetDynamic!.Position : TargetBody!.GetPosition(simulationTime);
+        var targetPosition = isDynamicTarget ? TargetDynamic!.Position : TargetBody!.GetPosition(simulation?.SimulationTime ?? DateTime.UtcNow);
         camera.Position.X = (float)(targetPosition.X + Math.Sin(cameraAngleX) * Math.Cos(cameraAngleY) * cameraDistance);
         camera.Position.Y = (float)(targetPosition.Y + Math.Sin(cameraAngleY) * cameraDistance);
         camera.Position.Z = (float)(targetPosition.Z + Math.Cos(cameraAngleX) * Math.Cos(cameraAngleY) * cameraDistance);

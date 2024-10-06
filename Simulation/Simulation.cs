@@ -1,6 +1,6 @@
 public class Simulation
 {
-    int Speed = 1;
+    int Speed = 0;
     public DateTime SimulationTime;
     List<OrbitingObject> orbitingBodies = new List<OrbitingObject>();
     public IEnumerable<OrbitingObject> OrbitingBodies => orbitingBodies;
@@ -27,6 +27,13 @@ public class Simulation
                 ds.UpdatePosition(deltaTime);
             }
         }
+    }
+    public void ForceStep()
+    {
+        var cspeed = Speed;
+        Speed = 1;
+        Update();
+        Speed = cspeed;
     }
 
 
@@ -61,6 +68,7 @@ public class Simulation
             if (obj is CelestialBody body)
             {
                 var position = body.GetPosition(SimulationTime);
+                if (position.IsBehindCamera(camera))continue;
                 var distance = Vector3D.Distance(camera.Position, position);
                 if (body.Model == null || distance >= 1000 - body.Size)
                 {

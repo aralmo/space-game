@@ -1,0 +1,39 @@
+[
+    {
+        "Type": "floating",
+        "Text": "NC-Horizon Star, orbiting Aeon1"
+    },
+    {
+        "Type": "dialog",
+        "Side": 1,
+        "Who": "voss",
+        "Text": "should we start the tutorial?"
+    },
+    {
+        "Type": "choices",
+        "Side": 0,
+        "Who": "captain",
+        "Choices": [
+            {
+                "Text": "Yes",
+                "Set" : "do_tutorial"
+            },
+            {
+                "Text": "No (skip tutorial)"
+            }
+        ]
+    },
+    {
+        "Type": "dialog",
+        "If" : ["do_tutorial"],
+        "Side": 1,
+        "Who": "voss",
+        "Text": "ok, let's start the tutorial?"
+    },
+    {
+        "Type": "dialog",
+        "Side": 1,
+        "Who": "voss",
+        "Text": "We are done"
+    }
+]

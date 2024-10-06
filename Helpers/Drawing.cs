@@ -42,8 +42,8 @@ public static class Drawing
             {
                 b = points[0];
             }
-            var ibca = IsBehindCamera(camera, a);
-            var ibcb = IsBehindCamera(camera, b);
+            var ibca = a.IsBehindCamera(camera);
+            var ibcb = b.IsBehindCamera(camera);
             if (!ibca || !ibcb)
             {
                 var screenA = GetWorldToScreen(a, camera);
@@ -58,8 +58,6 @@ public static class Drawing
         }
     }
 
-    static bool IsBehindCamera(Camera3D camera, Vector3 point)
-        => Vector3.Dot(Vector3.Normalize(point - camera.Position), camera.Target - camera.Position) <= 0;
 
     static (int x, int y) selected = default;
     static string input = string.Empty;
