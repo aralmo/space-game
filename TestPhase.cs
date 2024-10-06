@@ -9,8 +9,7 @@ public static class TestGamePhase
         var background = new Background();
         Shaders.Load();
         SetupGame();
-        Camera.Orbit(Game.PlayerShip);
-        Game.Simulation.ForceStep();
+        Camera.CinematicView(Game.PlayerShip);
         DialogController.Play("intro");
         while (!WindowShouldClose())
         {
@@ -18,12 +17,12 @@ public static class TestGamePhase
             Camera.Update();
             BeginDrawing();
             background.Draw2D(Camera.Current, DateTime.UtcNow);
-            Game.Simulation.Draw2D(Camera.Current);
-            Game.PlayerShip.DynamicSimulation.PathPredictor.DrawPredictedPath2D(Camera.Current);
-            if (Game.PlayerShip.DynamicSimulation.MajorInfluenceBody != null)
-            {
-                Game.Simulation.DrawOrbits2D(Camera.Current, Game.PlayerShip.DynamicSimulation.MajorInfluenceBody);
-            }
+            Game.Simulation.Draw2D(Camera.Current);            
+            // Game.PlayerShip.DynamicSimulation.PathPredictor.DrawPredictedPath2D(Camera.Current);
+            // if (Game.PlayerShip.DynamicSimulation.MajorInfluenceBody != null)
+            // {
+            //     Game.Simulation.DrawOrbits2D(Camera.Current, Game.PlayerShip.DynamicSimulation.MajorInfluenceBody);
+            // }
             BeginMode3D(Camera.Current);
             Game.PlayerShip.Draw3D();
             Game.Simulation.Draw3D(Camera.Current);
@@ -48,6 +47,8 @@ public static class TestGamePhase
         simulation.RegisterDynamicForUpdate(ds);
         Game.Simulation = simulation;
         Game.PlayerShip = new PlayerShip(simulation, ds, ShipModels.Load("ship1"));
+        //
+        Game.Simulation.ForceStep();
     }
     static (Vector3D pos, Vector3D vel) ShipStartingVectors(Simulation sim)
     {
