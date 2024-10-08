@@ -10,24 +10,29 @@ public static class TestGamePhase
         Shaders.Load();
         SetupGame();
         Camera.Orbit(Game.PlayerShip);
-        DialogController.Play("intro");
+        //DialogController.Play("test");
+        UInt64 iter = 0;
         while (!WindowShouldClose())
         {
+            if (iter++ % TARGET_FPS == 0)
+            {
+                Game.CurrentMission?.Update();
+            }
             Game.Simulation.Update();
             Camera.Update();
+            if (!DialogController.Running)
+            {
+                DrawManeuverGUI();
+            }
             BeginDrawing();
             background.Draw2D(Camera.Current, DateTime.UtcNow);
-            Game.Simulation.Draw2D(Camera.Current);            
-            // Game.PlayerShip.DynamicSimulation.PathPredictor.DrawPredictedPath2D(Camera.Current);
-            // if (Game.PlayerShip.DynamicSimulation.MajorInfluenceBody != null)
-            // {
-            //     Game.Simulation.DrawOrbits2D(Camera.Current, Game.PlayerShip.DynamicSimulation.MajorInfluenceBody);
-            // }
+            Game.Simulation.Draw2D(Camera.Current);
+
             BeginMode3D(Camera.Current);
             Game.PlayerShip.Draw3D();
             Game.Simulation.Draw3D(Camera.Current);
             EndMode3D();
-            //DrawEdit(ref orb);
+            Game.CurrentMission?.Draw2D();
             DialogController.Draw2D();
             EndDrawing();
         }
@@ -36,6 +41,20 @@ public static class TestGamePhase
         ShipModels.Unload();
         //unload simualtion models when it's separated.
         CloseWindow();
+    }
+
+    private static void DrawManeuverGUI()
+    {
+        Game.PlayerShip.DynamicSimulation.PathPredictor.DrawPredictedPath2D(Camera.Current);
+        if (Game.PlayerShip.DynamicSimulation.MajorInfluenceBody != null)
+        {
+            Game.Simulation.DrawOrbits2D(Camera.Current, Game.PlayerShip.DynamicSimulation.MajorInfluenceBody);
+        }
+    }
+
+    static void DrawGameUI2D()
+    {
+
     }
 
     static void SetupGame()

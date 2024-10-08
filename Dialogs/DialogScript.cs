@@ -23,8 +23,8 @@ public class DialogScript
         public DialogSide? Side { get; set; }
         public string? Who { get; set; }
         public ChoiceEntry[]? Choices { get; set; }
-        public string? Param{get;set;}
-        public string[]? If {get;set;}
+        public string? Param { get; set; }
+        public string[]? If { get; set; }
     }
 
     private struct ChoiceEntry
@@ -72,6 +72,12 @@ public class DialogScript
                     break;
                 case "camera":
                     actions.Add(new SetCameraAction(entry.Who, entry.Param)
+                    {
+                        If = entry.If
+                    });
+                    break;
+                case "start-mission":
+                    actions.Add(new StartMissionAction(entry.Param)
                     {
                         If = entry.If
                     });

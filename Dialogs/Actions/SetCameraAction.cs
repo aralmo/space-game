@@ -15,16 +15,14 @@ public class SetCameraAction : ScriptAction
     {
         if (!finished)
         {
-            if (who == "player")
+            switch (camera)
             {
-                switch(camera){
-                    case "orbit":
-                        Camera.Orbit(Game.PlayerShip);
-                        break;
-                    case "cinematic":
-                        Camera.CinematicView(Game.PlayerShip);
-                        break;
-                }
+                case "orbit":
+                    Camera.Orbit(Game.PlayerShip);
+                    break;
+                case "cinematic":
+                    Camera.CinematicView(Game.PlayerShip);
+                    break;
             }
         }
         finished = true;

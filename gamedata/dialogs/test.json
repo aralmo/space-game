@@ -1,7 +1,49 @@
 [
     {
+        "Type": "camera",
+        "Who": "player",
+        "Param": "cinematic"
+    },
+    {
         "Type": "floating",
-        "Text": "NC-Horizon Star, orbiting Aeon1",
-        "Side" : 0
+        "Text": "NC-Horizon Star,  Aeon-1 orbit"
+    },
+    {
+        "Type": "dialog",
+        "Side": 1,
+        "Who": "voss",
+        "Text": "Would you like to start the tutorial?."
+    },
+    {
+        "Type": "choices",
+        "Side": 0,
+        "Who": "captain",
+        "Choices": [
+            {
+                "Text": "Yes.",
+                "Set": "do_tutorial"
+            },
+            {
+                "Text": "No.",
+                "Set" : "skip_tutorial"
+            }
+        ]
+    },
+    {
+        "If" : ["do_tutorial"],
+        "Type": "dialog",
+        "Side": 1,
+        "Who": "voss",
+        "Text": "Follow the mission."
+    },
+    {
+        "Type": "start-mission",
+        "Param": "tutorial",
+        "If" : ["do_tutorial"]
+    },
+    {
+        "Type" : "camera",
+        "Param": "orbit",
+        "If" : ["skip_tutorial"]
     }
 ]
