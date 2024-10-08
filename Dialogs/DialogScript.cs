@@ -23,6 +23,7 @@ public class DialogScript
         public DialogSide? Side { get; set; }
         public string? Who { get; set; }
         public ChoiceEntry[]? Choices { get; set; }
+        public string? Param{get;set;}
         public string[]? If {get;set;}
     }
 
@@ -65,6 +66,12 @@ public class DialogScript
                         choices.Add(new DialogChoice(choice.Text, choice.Set));
                     }
                     actions.Add(new DialogChoiceAction(entry.Who, choices.ToArray())
+                    {
+                        If = entry.If
+                    });
+                    break;
+                case "camera":
+                    actions.Add(new SetCameraAction(entry.Who, entry.Param)
                     {
                         If = entry.If
                     });

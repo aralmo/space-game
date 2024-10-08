@@ -9,6 +9,7 @@ public class DialogChoiceAction : DialogAction
     public DialogChoiceAction(string characterId, params DialogChoice[] choices) : base(DialogSide.left, characterId, string.Empty)
     {
         character = Characters.Get(characterId);
+        Text = new string('\n',choices.Length);
         this.characterId = characterId;
         this.choices = choices;
     }

@@ -9,7 +9,7 @@ public static class TestGamePhase
         var background = new Background();
         Shaders.Load();
         SetupGame();
-        Camera.CinematicView(Game.PlayerShip);
+        Camera.Orbit(Game.PlayerShip);
         DialogController.Play("intro");
         while (!WindowShouldClose())
         {
@@ -46,7 +46,7 @@ public static class TestGamePhase
         ds.PathPredictor.Start();
         simulation.RegisterDynamicForUpdate(ds);
         Game.Simulation = simulation;
-        Game.PlayerShip = new PlayerShip(simulation, ds, ShipModels.Load("ship1"));
+        Game.PlayerShip = new PlayerShip(simulation, ds, "ship1");
         //
         Game.Simulation.ForceStep();
     }

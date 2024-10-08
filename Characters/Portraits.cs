@@ -9,7 +9,7 @@ public static class Portraits
         {
             var img = LoadImage($"gamedata/portraits/{portrait}.png");
             ImageResizeNN(ref img, 70, 70);
-            ImageResizeNN(ref img, 200, 200);
+            ImageResizeNN(ref img, 300, 300);
             texture = LoadTextureFromImage(img);
             portraits.Add(portrait, texture);
             UnloadImage(img);

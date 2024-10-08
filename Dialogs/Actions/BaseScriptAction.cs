@@ -3,6 +3,7 @@ public abstract class ScriptAction
 {
     public virtual string[]? If {get; set;}
     public virtual bool CanBeSkipped { get => false; }
+    public virtual bool MoveForwardOnFinish {get => false;}
     public virtual bool Finished { get => true; }
     public virtual void Start() { }
     public virtual void Expedite() { }

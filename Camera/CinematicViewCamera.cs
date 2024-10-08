@@ -10,7 +10,7 @@ public class CinematicViewCamera : ICameraController
     public CinematicViewCamera(DynamicSimulation ship)
     {
 
-        float distance =2f;
+        float distance = 2f;
         this.camera = new Camera3D()
         {
             Position = GetPosition(ship, distance, 0f),
@@ -21,9 +21,8 @@ public class CinematicViewCamera : ICameraController
         };
         update = () =>
         {
-            t += 0.0002f;
+            t += 0.0005f;
             Vector3 pos = GetPosition(ship, distance, t);
-
             this.camera.Position = pos;
             this.camera.Target = ship.Position;
         };
@@ -32,15 +31,26 @@ public class CinematicViewCamera : ICameraController
 
     private static Vector3 GetPosition(DynamicSimulation ship, float distance, float t)
     {
-        var v = (1f-MathF.Cos(t * MathF.PI)) *.5f;
-        var v2 = (1f-MathF.Sin(t * MathF.PI))*.5f;
-
         Vector3 pos;
         if (ship.MajorInfluenceBody != null)
         {
-            pos = ship.Position
-            + ((ship.Position - ship.MajorInfluenceBody.GetPosition(ship.simulation.SimulationTime)).Normalize() * distance)
-            + (ship.UpVector() * (1f-(.3f*v))) + (ship.Velocity.Normalize() * (1f+(.7f*v2)));
+            var rel_pos = (ship.Position - ship.MajorInfluenceBody.GetPosition(ship.simulation.SimulationTime)).Normalize() * distance;
+            var up = ship.UpVector();
+            var fwd = -Vector3.Cross(rel_pos, up).Normalize();
+            float sinComponent = (float)Math.Sin(t) * 0.5f; // Adjust the multiplier for smoothness
+            float cosComponent = (float)Math.Cos(t) * 0.5f; // Adjust the multiplier for smoothness
+            up *= 1.0f + sinComponent; // Apply the sin component to the up vector
+            fwd *= 1.0f + cosComponent; // Apply the cos component to the forward vector
+
+            if (up.Y > 0)
+            {
+                pos = ship.Position
+                + rel_pos + up + fwd;
+            }else{
+                pos = ship.Position
+                + rel_pos - up - fwd;
+            }
+
         }
         else
         {
@@ -51,4 +61,4 @@ public class CinematicViewCamera : ICameraController
     }
 
     public void Update() => update();
-} 
+}
