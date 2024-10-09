@@ -8,9 +8,9 @@ public class CelestialBody : OrbitingObject
     /// <param name="radius"></param>
     /// <param name="mass"></param>
     /// <returns></returns>
-    public static CelestialBody CreateCelestial(OrbitingObject centralBody, double radius, double mass, double? eccentricity = null, double? inclination = null, double? argumentOfPeriapsis = null)
+    public static CelestialBody CreateCelestial(OrbitingObject centralBody, double radius, double mass,DateTime time, double? eccentricity = null, double? inclination = null, double? argumentOfPeriapsis = null)
     {
-        var orbit = Solve.CircularOrbit(radius, centralBody.Mass, default);
+        var orbit = Solve.CircularOrbit(radius, centralBody.Mass, time);
         if (eccentricity != null) orbit.Eccentricity = eccentricity.Value;
         if (inclination != null) orbit.Inclination = inclination.Value;
         if (argumentOfPeriapsis != null) orbit.ArgumentOfPeriapsis = argumentOfPeriapsis.Value;

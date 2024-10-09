@@ -1,9 +1,14 @@
 public class Simulation
 {
     int Speed = 0;
-    public DateTime SimulationTime;
+    public DateTime SimulationTime {get;set;}
     List<OrbitingObject> orbitingBodies = new List<OrbitingObject>();
     public IEnumerable<OrbitingObject> OrbitingBodies => orbitingBodies;
+
+    public Simulation(DateTime startTime)
+    {
+        this.SimulationTime = startTime;
+    }
     public Simulation AddOrbitingBody(OrbitingObject body)
     {
         orbitingBodies.Add(body);
@@ -68,7 +73,7 @@ public class Simulation
             if (obj is CelestialBody body)
             {
                 var position = body.GetPosition(SimulationTime);
-                if (position.IsBehindCamera(camera))continue;
+                if (position.IsBehindCamera(camera)) continue;
                 var distance = Vector3D.Distance(camera.Position, position);
                 if (body.Model == null || distance >= 1000 - body.Size)
                 {
@@ -83,14 +88,15 @@ public class Simulation
             }
         }
     }
-    public void DrawOrbits2D(Camera3D camera, OrbitingObject? centerBody = null)
+    public void DrawOrbits2D(Camera3D camera, out Vector3D? closestToCamera, OrbitingObject? centerBody = null)
     {
+        closestToCamera = default;
         foreach (var body in orbitingBodies)
         {
             if (body.OrbitPoints != null)
             {
                 var color = (centerBody != null && centerBody == body) ? new Color(40, 40, 40, 255) : Color.DarkGray;
-                Drawing.Draw2DLineOfPoints(camera, body.OrbitPoints!.Select(p => p + body.CentralBody!.GetPosition(SimulationTime)).ToArray(), color);
+                Drawing.Draw2DLineOfPoints(camera, body.OrbitPoints!.Select(p => p + body.CentralBody!.GetPosition(SimulationTime)).ToArray(), out closestToCamera, color);
             }
         }
     }

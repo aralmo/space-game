@@ -18,7 +18,7 @@ public static class Vector3Extensions
         return Vector3.Zero; // Return zero vector if the magnitude is almost zero
     }
 
-    public static IEnumerable<Vector3D> Decimate(this IEnumerable<Vector3D> points, int maxResolution)
+    public static IEnumerable<T> Decimate<T>(this IEnumerable<T> points, int maxResolution)
     {
         var pointsA = points.ToArray();
         var step = pointsA.Length / maxResolution;
@@ -47,6 +47,17 @@ public static class Vector3Extensions
         float roll = MathF.Atan2(right.Y, correctedUp.Y);
 
         return (pitch, yaw, roll);
+    }
+    public static Vector3D Sum(this IEnumerable<Vector3D> vectors)
+    {
+        double sumX = 0, sumY = 0, sumZ = 0;
+        foreach (var v in vectors)
+        {
+            sumX += v.X;
+            sumY += v.Y;
+            sumZ += v.Z;
+        }
+        return new Vector3D(sumX, sumY, sumZ);
     }
 
     public static bool IsBehindCamera(this Vector3D point, Camera3D camera)

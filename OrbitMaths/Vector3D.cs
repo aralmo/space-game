@@ -91,8 +91,9 @@ public struct Vector3D
         return Math.Sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
     }
 
-public static implicit operator Vector3(Vector3D v)
-{
-    return new Vector3((float)v.X, (float)v.Y, (float)v.Z);
-}
+    public static implicit operator Vector3(Vector3D v)
+    {
+        return new Vector3((float)v.X, (float)v.Y, (float)v.Z);
+    }
+
 }

@@ -21,16 +21,25 @@ public static class Drawing
         }
     }
 
-    public static void Draw2DLineOfPoints(Camera3D camera, Vector3D[] points, Color? color = null, bool closed = true)
+    public static void Draw2DLineOfPoints(Camera3D camera, Vector3D[] points, out Vector3D? closestPointToMouse, Color? color = null, bool closed = true)
     {
-        foreach (var (a, b) in GetLines(camera, points, closed))
+        var mousePosition = GetMousePosition();
+        closestPointToMouse = default(Vector3D);
+        double closestDistance = double.MaxValue;
+        foreach (var (a, b, a3d) in GetLines(camera, points, closed))
         {
             DrawLine((int)a.X, (int)a.Y, (int)b.X, (int)b.Y, color.HasValue ? color.Value : Color.DarkGray);
-            //DrawCircle((int)a.X, (int)a.Y, 1, color.HasValue ? color.Value : Color.Green);
+            var distance = Vector2.Distance(mousePosition, a);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;                
+                //if (distance <= MIN_DISTANCE_TO_MOUSE) 
+                closestPointToMouse = a3d;
+            }
         }
     }
 
-    public static IEnumerable<(Vector2 a, Vector2 b)> GetLines(Camera3D camera, Vector3D[] points, bool closed)
+    public static IEnumerable<(Vector2 a, Vector2 b, Vector3D a3d)> GetLines(Camera3D camera, Vector3D[] points, bool closed)
     {
         var sw = GetScreenWidth();
         var sh = GetScreenHeight();
@@ -52,7 +61,7 @@ public static class Drawing
                 if (ibca) screenB = new Vector2(1f - screenA.X, 1f - screenA.Y);
                 if ((screenA.X > 0 && screenA.X < sw && screenA.Y > 0 && screenA.Y < sh) || (screenB.X > 0 && screenB.X < sw && screenB.Y > 0 && screenB.Y < sh))
                 {
-                    yield return (screenA, screenB);
+                    yield return (screenA, screenB, a);
                 }
             }
         }
