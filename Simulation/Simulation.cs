@@ -1,7 +1,7 @@
 public class Simulation
 {
-    int Speed = 0;
-    public DateTime SimulationTime {get;set;}
+    public int Speed = 0;
+    public DateTime SimulationTime { get; set; }
     List<OrbitingObject> orbitingBodies = new List<OrbitingObject>();
     public IEnumerable<OrbitingObject> OrbitingBodies => orbitingBodies;
 
@@ -26,29 +26,16 @@ public class Simulation
         for (int i = 0; i < Speed; i++)
         {
             SimulationTime = SimulationTime.AddSeconds(deltaTime);
-            foreach (var ds in dynamicSimulations)
-            {
-                ds.ApplyGravity(SimulationTime, deltaTime);
-                ds.UpdatePosition(deltaTime);
-            }
         }
     }
     public void ForceStep()
     {
+        float deltaTime = 1.0f / TARGET_FPS;
         var cspeed = Speed;
         Speed = 1;
         Update();
         Speed = cspeed;
     }
-
-
-
-
-
-
-
-
-
 
     public void Draw3D(Camera3D camera)
     {

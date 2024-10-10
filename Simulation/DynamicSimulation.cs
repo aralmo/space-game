@@ -14,44 +14,12 @@ public class DynamicSimulation
         Velocity = velocity;
         PathPredictor = new DynamicPathPredictor(this);
     }
-    public void ApplyGravity(DateTime? time, float deltaTime)
-    {
-        double maxInfluence = double.MinValue;
-
-        foreach (var obj in simulation.OrbitingBodies)
-        {
-            if (obj is CelestialBody body)
-            {
-                var bodyPosition = body.GetPosition(time ?? simulation.SimulationTime);
-                var distance = Vector3.Distance(Position, bodyPosition);
-                var influence = G * body.Mass / (distance * distance);
-                if (influence < MIN_INFLUENCE) continue;
-                if (maxInfluence < influence)
-                {
-                    maxInfluence = influence;
-                    MajorInfluenceBody = body;
-                }
-                (_, Velocity) = Solve.ApplyGravity(
-                    position: Position,
-                    velocity: Velocity,
-                    planetPosition: body.GetPosition(time ?? simulation.SimulationTime),
-                    planetMass: body.Mass,
-                    stepTimeSeconds: deltaTime);
-            }
-        }
-    }
-    public void UpdatePosition(float deltaTime)
-    {
-        Position += Velocity * deltaTime;
-    }
-
     public Vector3 UpVector()
     {
         var forward = new Vector3(0, 0, 1); // Assuming forward direction is along the Z-axis
         var velocityVector = new Vector3((float)Velocity.X, (float)Velocity.Y, (float)Velocity.Z);
         return - Vector3.Cross(forward, velocityVector).Normalize();
     }
-
     public void Draw3D(Model model)
     {
         var v = Velocity - (MajorInfluenceBody != null ? MajorInfluenceBody.GetVelocity(simulation.SimulationTime) : Vector3D.Zero);

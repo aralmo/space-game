@@ -55,9 +55,13 @@ public class DynamicPathPredictor
                 if (!needsUpdate) continue;
                 if (dobject.MajorInfluenceBody != null)
                 {
+                    var maneuver = Maneuvers.LastOrDefault();
+                    var opos = maneuver != null ? maneuver.PredictedPosition : dobject.Position;
+                    var ovel = maneuver != null? maneuver.StartVelocity : dobject.Velocity;
+
                     var orbit = Solve.KeplarOrbit(
-                        dobject.Position - dobject.MajorInfluenceBody.GetPosition(dobject.simulation.SimulationTime),
-                        dobject.Velocity - dobject.MajorInfluenceBody.GetVelocity(dobject.simulation.SimulationTime),
+                        opos - dobject.MajorInfluenceBody.GetPosition(dobject.simulation.SimulationTime),
+                        ovel - dobject.MajorInfluenceBody.GetVelocity(dobject.simulation.SimulationTime),
                         dobject.MajorInfluenceBody.Mass
                     );
                     if (orbit.Type == OrbitType.Elliptical)
@@ -68,10 +72,10 @@ public class DynamicPathPredictor
                     {
                         currentOrbitT = 120;
                     }
-                    var predicted = PredictPath((int)currentOrbitT + ORBIT_SLOW_PREDICT_TIME_SECONDS, TARGET_FPS);
+                    var predicted = PredictPath((int)currentOrbitT, TARGET_FPS);
                     if (predicted.HasValue && predicted.Value.ClosestToBodyPositions.Any())
                     {
-                        currentOrbitT+=60;
+                        currentOrbitT += 60;
                     }
                     Prediction = predicted;
                 }
@@ -168,6 +172,7 @@ public class DynamicPathPredictor
         }
         return new PredictedPath()
         {
+            CurrentBodyOfInfluence = dobject.MajorInfluenceBody,
             Positions = predictedPath.ToArray(),
             Velocities = predictedVelocities.ToArray(),
             Times = predictedTimes.ToArray(),

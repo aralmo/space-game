@@ -3,12 +3,9 @@ public class PlayerShip
 {
     private readonly Model model;
     private readonly ModelAnimation[] animations;
-
     HashSet<string> playingEffects = new HashSet<string>();
-
     public Simulation Simulation { get; private set; }
     public DynamicSimulation DynamicSimulation { get; private set; }
-
     public unsafe PlayerShip(Simulation simulation, DynamicSimulation dynamicSimulation, string model)
     {
         Simulation = simulation;
@@ -17,14 +14,11 @@ public class PlayerShip
         var fc = animations[0].FrameCount;
         DynamicSimulation = dynamicSimulation;
     }
-
     public void Update()
     {
         Simulation.Update();
     }
-
     int hangarFrame;
-
     private void UpdateEffects()
     {
         if (playingEffects.Contains("hangar"))
@@ -44,13 +38,11 @@ public class PlayerShip
             }
         }
     }
-
     public void Draw3D()
     {
         DynamicSimulation.Draw3D(model);
         UpdateEffects();
     }
-
     public void PlayEffect(string effect)
     {
         playingEffects.Add(effect);

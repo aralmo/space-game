@@ -5,7 +5,7 @@ public static class TestGamePhase
 
     public static unsafe void Run()
     {
-        InitWindow(1000, 1000, "sim");
+        InitWindow(2000, 2000, "sim");
 
         SetTargetFPS(60);
         var background = new Background();
@@ -14,21 +14,49 @@ public static class TestGamePhase
         Camera.Orbit(Game.PlayerShip);
         //DialogController.Play("test");
         UInt64 iter = 0;
+        bool playingTurn = false;
+        UInt64 turnIter = 0;
+        var currentPoint = 0;
+        PredictedPath prediction = default;
         while (!WindowShouldClose())
         {
+
+            if (playingTurn && turnIter < iter)
+            {
+                playingTurn = false;
+                Game.Simulation.Speed = 0;
+                Game.PlayerShip.DynamicSimulation.PathPredictor.Invalidate();
+                maneuvers.Clear();
+            }
+            if (playingTurn)
+            {
+                while (prediction.Times[currentPoint] <= Game.Simulation.SimulationTime) { currentPoint++; };
+                Game.PlayerShip.DynamicSimulation.Position = prediction.Positions[currentPoint] + Game.PlayerShip.DynamicSimulation.MajorInfluenceBody.GetPosition(Game.Simulation.SimulationTime);
+                Game.PlayerShip.DynamicSimulation.Velocity = prediction.Velocities[currentPoint];
+            }
+            Game.Simulation.Update();
+
             if (iter++ % TARGET_FPS == 0)
             {
                 Game.CurrentMission?.Update();
             }
-            Game.Simulation.Update();
             Camera.Update();
             BeginDrawing();
 
             background.Draw2D(Camera.Current, DateTime.UtcNow);
             Game.Simulation.Draw2D(Camera.Current);
-            if (!DialogController.Running)
+            if (!DialogController.Running && !playingTurn)
             {
                 Maneuver();
+                if (IsKeyPressed(KeyboardKey.Space))
+                {
+                    playingTurn = true;
+                    turnIter = iter + TURN_SECONDS * TARGET_FPS;
+                    Game.Simulation.Speed = 1;
+                    currentPoint = 0;
+                    prediction = Game.PlayerShip.DynamicSimulation.PathPredictor.Prediction.Value;
+
+                }
             }
             BeginMode3D(Camera.Current);
             Game.PlayerShip.Draw3D();
@@ -48,18 +76,19 @@ public static class TestGamePhase
     static Stack<Maneuver> maneuvers = new();
     private static void Maneuver()
     {
-        var points = Game.PlayerShip.DynamicSimulation.PathPredictor.Prediction;
-        if (points.HasValue)
+        var prediction = Game.PlayerShip.DynamicSimulation.PathPredictor.Prediction;
+        if (prediction.HasValue)
         {
+            //draw the predicted path
             int decimation = 300;
-            var dpoints = points.Value.Positions.Decimate(decimation).ToArray();
-            var dtimes = points.Value.Times.Decimate(decimation).ToArray();
-            var dvelocities = points.Value.Velocities.Decimate(decimation).ToArray();
+            var dpoints = prediction.Value.Positions.Decimate(decimation).ToArray();
+            var dtimes = prediction.Value.Times.Decimate(decimation).ToArray();
+            var dvelocities = prediction.Value.Velocities.Decimate(decimation).ToArray();
             var mibp = Game.PlayerShip.DynamicSimulation.MajorInfluenceBody?.GetPosition(Game.Simulation.SimulationTime);
             float minDistance = float.MaxValue;
             Vector3D closest = Vector3D.Zero;
             Vector2 closestScreen = Vector2.Zero;
-            Vector3D mv = Vector3D.Zero;            
+            Vector3D mv = Vector3D.Zero;
             var mouse = GetMousePosition();
             DateTime mtime = default;
             for (int i = 0; i < dpoints.Length - 1; i++)
@@ -83,6 +112,27 @@ public static class TestGamePhase
                 }
                 DrawLine((int)Math.Round(viewPosA.X), (int)Math.Round(viewPosA.Y), (int)Math.Round(viewPosB.X), (int)Math.Round(viewPosB.Y), Color.Beige);
             }
+            foreach (var capture in prediction.Value.ClosestToBodyPositions)
+            {
+                var distance = Vector3D.Distance(Camera.Current.Position, capture.BodyPosition);
+                double sizeFactor = 1000 / distance;
+                float size = 1f;
+                if (capture.Body is CelestialBody celestial)
+                {
+                    size = celestial.Size;
+                }
+                float drawSize = (float)Math.Max(1f, size * sizeFactor);
+                var p1 = capture.BodyPosition + mibp;
+                var p2 = capture.ShipPosition + mibp;
+                if (Vector3D.Distance(p1.Value, p2.Value) < MIN_CAPTURE_DISTANCE)
+                {
+                    var pos = GetWorldToScreen(p1.Value, Camera.Current);
+                    var shipP = GetWorldToScreen(p2.Value, Camera.Current);
+                    DrawCircle((int)float.Round(pos.X), (int)float.Round(pos.Y), Math.Max(4, drawSize), Color.Orange);
+                    DrawCircle((int)float.Round(shipP.X), (int)float.Round(shipP.Y), Math.Max(4, drawSize), Color.Blue);
+                }
+            }
+            //draw marker and place maneuver on mouse click
             if (closestScreen != Vector2.Zero)
             {
                 DrawCircle((int)Math.Round(closestScreen.X), (int)Math.Round(closestScreen.Y), 4f, Color.Gold);
@@ -103,8 +153,10 @@ public static class TestGamePhase
         }
         else
         {
+            //if no points are set, invalidate for the predictor to run once
             Game.PlayerShip.DynamicSimulation.PathPredictor.Invalidate();
         }
+        //paint closer influence capture points.
 
         if (Game.PlayerShip.DynamicSimulation.MajorInfluenceBody != null)
         {
@@ -113,6 +165,7 @@ public static class TestGamePhase
         if (maneuvers.Any())
         {
 
+            //edit maneuver
             foreach (var man in maneuvers)
             {
                 var spos = GetWorldToScreen(man.PredictedPosition, Camera.Current);
@@ -190,7 +243,7 @@ public static class TestGamePhase
     static (Vector3D pos, Vector3D vel) ShipStartingVectors(Simulation sim)
     {
         var planet = sim.OrbitingBodies.Skip(1).First();
-        var orbit = OrbitingObject.Create(planet, 20f, 1f,sim.SimulationTime);
+        var orbit = OrbitingObject.Create(planet, 20f, 1f, sim.SimulationTime);
         return (orbit.GetPosition(sim.SimulationTime), orbit.GetVelocity(sim.SimulationTime));
     }
 }
