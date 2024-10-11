@@ -23,8 +23,10 @@ public class Background
 
         return stars;
     }
-    public unsafe void Draw2D(Camera3D camera, DateTime time)
+    public unsafe void Draw2D(Camera3D? cameraP = null, DateTime? simTime = null)
     {
+        var time = simTime.HasValue ? simTime.Value : Game.Simulation.Time;
+        var camera = cameraP.HasValue?cameraP.Value : Camera.Current;
         ClearBackground(Color.Black);
         var t = (time - DateTime.UnixEpoch).TotalSeconds * .2f % (Math.PI * 2);
         for (int i = 0; i < stars.Length; i++)

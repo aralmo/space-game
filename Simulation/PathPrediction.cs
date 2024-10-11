@@ -23,7 +23,7 @@ public class PathPrediction
                 .Select(b => (influence: Solve.Influence(position, b.GetPosition(startTime), b.Mass), body: b as CelestialBody))
                 .MaxBy(b => b.influence).body;
         }
-        var predictionTime = Math.Max(40, ExpectedPredictionLengthSeconds(position, velocity, majorInfluence, startTime));
+        var predictionTime = Math.Min(120, ExpectedPredictionLengthSeconds(position, velocity, majorInfluence, startTime));
         points.AddRange(YieldPredictions(
             sim: sim,
             position: position,

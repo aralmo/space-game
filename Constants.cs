@@ -7,7 +7,7 @@ public static class Constants{
         public const float MIN_CAPTURE_DISTANCE = 20F;
         public const int ORBIT_SLOW_PREDICT_TIME_SECONDS = 2;
         public const int FONT_SIZE = 30;
-        public const float SHIP_ACCELERATION = 0.01f;
+        public const float SHIP_ACCELERATION = 0.001f;
         public const int MIN_DISTANCE_TO_MOUSE = 100;
         public const int TURN_SECONDS = 10;
 }

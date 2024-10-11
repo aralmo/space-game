@@ -25,6 +25,7 @@ public static class TestGamePhase
             }
             Camera.Update();
             Game.Simulation.Update();
+            Game.PlayerShip.Update();
             BeginDrawing();
             background.Draw2D(Camera.Current, DateTime.UtcNow);
             if (!DialogController.Running) { Game.Simulation.DrawOrbits2D(Camera.Current, out Vector3D? _); }
@@ -68,7 +69,6 @@ public static class TestGamePhase
             //TESTDrawBodyInfluences();
             EndDrawing();
         }
-
         Shaders.Unload();
         ShipModels.Unload();
         //unload simualtion models when it's separated.

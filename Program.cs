@@ -8,6 +8,7 @@ internal class Program
     private static unsafe void Main(string[] args)
     {
         TestGamePhase.Run();
+        //ShipVisuals.Run();
         //VNext.Run();
     }
 }
