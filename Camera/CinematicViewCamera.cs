@@ -34,7 +34,7 @@ public class CinematicViewCamera : ICameraController
         Vector3 pos;
         if (ship.MajorInfluenceBody != null)
         {
-            var rel_pos = (ship.Position - ship.MajorInfluenceBody.GetPosition(ship.simulation.SimulationTime)).Normalize() * distance;
+            var rel_pos = (ship.Position - ship.MajorInfluenceBody.GetPosition(ship.simulation.Time)).Normalize() * distance;
             var up = ship.UpVector();
             var fwd = -Vector3.Cross(rel_pos, up).Normalize();
             float sinComponent = (float)Math.Sin(t) * 0.5f; // Adjust the multiplier for smoothness

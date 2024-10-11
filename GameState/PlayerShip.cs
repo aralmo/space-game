@@ -16,7 +16,6 @@ public class PlayerShip
     }
     public void Update()
     {
-        Simulation.Update();
     }
     int hangarFrame;
     private void UpdateEffects()

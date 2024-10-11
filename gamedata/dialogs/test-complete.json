@@ -1,0 +1,17 @@
+[
+    {
+        "Type": "camera",
+        "Who": "player",
+        "Param": "cinematic"
+    },    
+    {
+        "Type": "dialog",
+        "Side": 1,
+        "Who": "voss",
+        "Text": "Well done!"
+    },
+    {
+        "Type" : "camera",
+        "Param": "orbit"
+    }
+]

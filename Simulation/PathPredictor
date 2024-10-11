@@ -1,4 +1,4 @@
-public class DynamicPathPredictor
+public class PathPredictor
 {
     object maneuversLock = new object();
     Maneuver[] _maneuvers = Array.Empty<Maneuver>();
@@ -183,7 +183,7 @@ public class DynamicPathPredictor
     {
         cancelPrediction = true;
     }
-    public DynamicPathPredictor(DynamicSimulation simulation)
+    public PathPredictor(DynamicSimulation simulation)
     {
         this.dobject = simulation;
     }

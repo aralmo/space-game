@@ -36,6 +36,11 @@ public static class Solve
             AsymptoteDirection = new Vector3D(NaNFix(asymptoteDirection.X), NaNFix(asymptoteDirection.Y), NaNFix(asymptoteDirection.Z))
         };
     }
+    public static float Influence(Vector3D shipPosition, Vector3D bodyPosition, double mass)
+    {
+        var d = Vector3D.Distance(shipPosition, bodyPosition);
+        return (float)(G * mass / (d * d));
+    }
 
     public static OrbitParameters KeplarOrbit(Vector3D position, Vector3D velocity, double bodyMass, DateTime date = default)
     {

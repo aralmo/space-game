@@ -20,6 +20,7 @@ public static class Vector3Extensions
 
     public static IEnumerable<T> Decimate<T>(this IEnumerable<T> points, int maxResolution)
     {
+        if (!points.Any()) yield break;
         var pointsA = points.ToArray();
         var step = pointsA.Length / maxResolution;
         if (pointsA.Length <= maxResolution)
@@ -60,7 +61,10 @@ public static class Vector3Extensions
         return new Vector3D(sumX, sumY, sumZ);
     }
 
-    public static bool IsBehindCamera(this Vector3D point, Camera3D camera)
-    => Vector3.Dot(Vector3.Normalize(point - camera.Position), camera.Target - camera.Position) <= 0;
+    public static bool IsBehindCamera(this Vector3D point, Camera3D? camera = null)
+    {
+        if (camera == null) camera = Camera.Current;
+        return Vector3.Dot(Vector3.Normalize(point - camera.Value.Position), camera.Value.Target - camera.Value.Position) <= 0;
+    }
 
 }

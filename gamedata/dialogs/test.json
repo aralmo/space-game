@@ -43,7 +43,6 @@
     },
     {
         "Type" : "camera",
-        "Param": "orbit",
-        "If" : ["skip_tutorial"]
+        "Param": "orbit"
     }
 ]

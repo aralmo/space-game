@@ -21,21 +21,11 @@ public static class Drawing
         }
     }
 
-    public static void Draw2DLineOfPoints(Camera3D camera, Vector3D[] points, out Vector3D? closestPointToMouse, Color? color = null, bool closed = true)
+    public static void Draw2DLineOfPoints(Camera3D camera, Vector3D[] points, Color? color = null, bool closed = true)
     {
-        var mousePosition = GetMousePosition();
-        closestPointToMouse = default(Vector3D);
-        double closestDistance = double.MaxValue;
         foreach (var (a, b, a3d) in GetLines(camera, points, closed))
         {
             DrawLine((int)a.X, (int)a.Y, (int)b.X, (int)b.Y, color.HasValue ? color.Value : Color.DarkGray);
-            var distance = Vector2.Distance(mousePosition, a);
-            if (distance < closestDistance)
-            {
-                closestDistance = distance;                
-                //if (distance <= MIN_DISTANCE_TO_MOUSE) 
-                closestPointToMouse = a3d;
-            }
         }
     }
 
