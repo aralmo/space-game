@@ -26,6 +26,7 @@ public static class TestGamePhase
             Camera.Update();
             Game.Simulation.Update();
             Game.PlayerShip.Update();
+            shipPrediction.Update();
             BeginDrawing();
             background.Draw2D(Camera.Current, DateTime.UtcNow);
             if (!DialogController.Running) { Game.Simulation.DrawOrbits2D(Camera.Current, out Vector3D? _); }
@@ -53,6 +54,7 @@ public static class TestGamePhase
                         Game.PlayerShip.DynamicSimulation.Position = currentShipPoint.Position;
                         Game.PlayerShip.DynamicSimulation.Velocity = currentShipPoint.Velocity;
                         Game.PlayerShip.DynamicSimulation.MajorInfluenceBody = currentShipPoint.MajorInfluence;
+                        Game.PlayerShip.enginePlaying = currentShipPoint.Accelerating;
                         Game.Simulation.Speed = 3;
                     }
                     else
@@ -138,6 +140,7 @@ public static class TestGamePhase
         if (IsKeyPressed(KeyboardKey.Backspace))
         {
             shipPrediction.RemoveManeuver();
+            return;
         }
         var maneuverPoint = shipPrediction.Points.Last(p => p.Time == maneuver.Time);
         var forwardVector = maneuverPoint.Velocity.Normalize();
@@ -150,17 +153,17 @@ public static class TestGamePhase
         var qVector = Vector3D.Cross(forwardVector, upVector).Normalize();
 
         if (IsKeyDown(KeyboardKey.W)) shipPrediction
-            .AddDeltaV(forwardVector * SHIP_ACCELERATION);
+            .AddDeltaV(forwardVector * MANEUVER_ACCELERATION);
         if (IsKeyDown(KeyboardKey.S)) shipPrediction
-            .AddDeltaV(forwardVector * -SHIP_ACCELERATION);
+            .AddDeltaV(forwardVector * -MANEUVER_ACCELERATION);
         if (IsKeyDown(KeyboardKey.D)) shipPrediction
-            .AddDeltaV(qVector * SHIP_ACCELERATION);
+            .AddDeltaV(qVector * MANEUVER_ACCELERATION);
         if (IsKeyDown(KeyboardKey.A)) shipPrediction
-            .AddDeltaV(qVector * -SHIP_ACCELERATION);
+            .AddDeltaV(qVector * -MANEUVER_ACCELERATION);
         if (IsKeyDown(KeyboardKey.Q)) shipPrediction
-            .AddDeltaV(upVector * SHIP_ACCELERATION);
+            .AddDeltaV(upVector * MANEUVER_ACCELERATION);
         if (IsKeyDown(KeyboardKey.Z)) shipPrediction
-            .AddDeltaV(upVector * -SHIP_ACCELERATION);
+            .AddDeltaV(upVector * -MANEUVER_ACCELERATION);
     }
 
     private static unsafe void TESTDrawBodyInfluences()

@@ -7,8 +7,8 @@ public class PlayerShip
     public Simulation Simulation { get; private set; }
     public DynamicSimulation DynamicSimulation { get; private set; }
 
-    private ParticleEmitter engineParticles;
-    bool enginePlaying = true;
+    private EngineEmitter engineParticles;
+    public bool enginePlaying = true;
     public unsafe PlayerShip(Simulation simulation, DynamicSimulation dynamicSimulation, string model)
     {
         Simulation = simulation;
@@ -16,9 +16,8 @@ public class PlayerShip
         this.animations = ShipModels.LoadAnimations(model);
         var fc = animations[0].FrameCount;
         DynamicSimulation = dynamicSimulation;
-        engineParticles = new ParticleEmitter(
-            position: DynamicSimulation.Position + DynamicSimulation.Velocity.Normalize() * -.93f,
-            velocity: DynamicSimulation.Velocity.Normalize() * -.02,
+        engineParticles = new EngineEmitter(
+            dynamicSimulation,
             particleSize: .08f,
             particleStartColor: new Color(41, 166, 207, 255),
             particleEndColor: Color.DarkBlue,
@@ -51,8 +50,6 @@ public class PlayerShip
         }
         if (enginePlaying)
         {
-            engineParticles.position = DynamicSimulation.Position + DynamicSimulation.Velocity.Normalize() * -.93f;
-            engineParticles.velocity = DynamicSimulation.Velocity.Normalize() * -.02;
             engineParticles.Update();
         }
     }

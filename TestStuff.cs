@@ -9,13 +9,19 @@ public static class Test
             .WithInfo(name: "Aeon Prime");
 
         var planet = CelestialBody
-            .CreateCelestial(centralBody: sun, radius: 2000f, mass: 900f,time: simulation.Time, eccentricity: 0.05f)
+            .CreateCelestial(centralBody: sun, radius: 2500f, mass: 900f,time: simulation.Time, eccentricity: 0.05f)
             .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.EarthLike, 1), size: 4f, Color.Blue)
+            .WithInfo(name: "Aeon-2");
+
+        var planet2 = CelestialBody
+            .CreateCelestial(centralBody: sun, radius: 1500f, mass: 600f,time: simulation.Time, eccentricity: 0.02f)
+            .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.LavaPlanet, 2), size: 3f, Color.Blue)
             .WithInfo(name: "Aeon-1");
 
         simulation
             .AddOrbitingBody(sun)
             .AddOrbitingBody(planet)
+            .AddOrbitingBody(planet2)
             .AddOrbitingBody(CelestialBody
                 .CreateCelestial(centralBody: planet, radius: 85f, mass: 90f,time: simulation.Time, argumentOfPeriapsis: -1.5f)
                 .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.Moon, 2), size: 1f)

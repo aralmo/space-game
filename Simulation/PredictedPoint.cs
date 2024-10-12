@@ -4,4 +4,5 @@ public class PredictedPoint
     public Vector3D Position;
     public Vector3D Velocity;
     public CelestialBody? MajorInfluence;
+    internal bool Accelerating;
 }

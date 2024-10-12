@@ -107,7 +107,7 @@ public static class Solve
         double timeOfPeriapsisPassage = meanAnomaly / Math.Sqrt(mu / Math.Pow(semiMajorAxis, 3));
         // For hyperbolic orbits, calculate the asymptote direction
         Vector3D asymptoteDirection = orbitType == OrbitType.Hyperbolic ? eVector.Normalize() : Vector3D.Zero;
-        var orbitalPeriod = 2 * Math.PI * Math.Sqrt(Math.Pow(semiMajorAxis, 3) / mu);
+        var orbitalPeriod = 2 * Math.PI * Math.Sqrt(Math.Pow(semiMajorAxis, 3)/mu);
         return new OrbitParameters
         {
             Type = orbitType,

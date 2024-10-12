@@ -3,12 +3,12 @@ public class OrbitingObject
     #region orbit
     Func<DateTime, Vector3D> positionF;
     public double Mass { get; protected set; }
-    public Vector3D GetPosition(DateTime time)
-        => positionF(time) + (CentralBody != null
+    public Vector3D GetPosition(DateTime time, bool includeParent = true)
+        => positionF(time) + (includeParent == true && CentralBody != null
             ? CentralBody.GetPosition(time)
             : Vector3D.Zero);
-    public Vector3D GetVelocity(DateTime time)
-        => OrbitParameters != null
+    public Vector3D GetVelocity(DateTime time, bool includeParent = true)
+        => includeParent == true && OrbitParameters != null
             ? OrbitParameters.Value.VelocityAtTime(time) + CentralBody!.GetVelocity(time)
             : Vector3D.Zero;
 

@@ -7,6 +7,7 @@ public class PathPrediction
     public IEnumerable<PredictedPoint> Points => points;
     public IEnumerable<Maneuver> Maneuvers => maneuvers;
     List<Maneuver> maneuvers = new();
+    float pendingPrediction = 0f;
     public PathPrediction(Simulation sim, DynamicSimulation dsim)
     {
         this.sim = sim;
@@ -15,7 +16,7 @@ public class PathPrediction
         Predict(sim, dsim.Position, dsim.Velocity, dsim.MajorInfluenceBody, sim.Time);
     }
 
-    private void Predict(Simulation sim, Vector3D position, Vector3D velocity, CelestialBody? majorInfluence, DateTime startTime)
+    private void Predict(Simulation sim, Vector3D position, Vector3D velocity, CelestialBody? majorInfluence, DateTime startTime, float? time = null, Maneuver? maneuver = null)
     {
         if (majorInfluence == null)
         {
@@ -23,7 +24,16 @@ public class PathPrediction
                 .Select(b => (influence: Solve.Influence(position, b.GetPosition(startTime), b.Mass), body: b as CelestialBody))
                 .MaxBy(b => b.influence).body;
         }
-        var predictionTime = Math.Min(120, ExpectedPredictionLengthSeconds(position, velocity, majorInfluence, startTime));
+        var expected = time.HasValue ? time.Value : ExpectedPredictionLengthSeconds(position, velocity + (maneuver != null ? maneuver.DeltaV : Vector3D.Zero), majorInfluence, startTime);
+        if (expected > 10)
+        {
+            pendingPrediction = expected - 10;
+        }
+        else
+        {
+            pendingPrediction -= expected;
+        }
+        var predictionTime = Math.Min(10, expected);
         points.AddRange(YieldPredictions(
             sim: sim,
             position: position,
@@ -50,13 +60,21 @@ public class PathPrediction
         m.DeltaV += deltaV;
         UpdatePredictionForManeuver(m);
     }
-
+    public void Update()
+    {
+        if (pendingPrediction > 0)
+        {
+            var point = points.Last();
+            Predict(sim, point.Position, point.Velocity, point.MajorInfluence, point.Time, pendingPrediction);
+        }
+    }
     private void UpdatePredictionForManeuver(Maneuver? m)
     {
         if (m == null) return;
         points.RemoveAll(p => p.Time > m.Time);
-        var last = points.Last();
-        Predict(sim, last.Position, last.Velocity, last.MajorInfluence, m.Time);
+        var last = points.LastOrDefault();
+        if (last == null) return;
+        Predict(sim, last.Position, last.Velocity, last.MajorInfluence, m.Time, null, m);
     }
 
     IEnumerable<PredictedPoint> YieldPredictions(Simulation sim, Vector3D position, Vector3D velocity, DateTime relTime, int seconds)
@@ -76,10 +94,12 @@ public class PathPrediction
                     velocity += direction * influence * delta;
                 }
             }
-
+            bool accelerating = false;
             foreach (var man in maneuvers)
             {
-                velocity += man.DVAtTime(relTime, 1) * delta;
+                var manForce = man.DVAtTime(relTime, Constants.SHIP_ACCELERATION) * delta;
+                if (manForce.Magnitude() > 0) accelerating = true;
+                velocity += manForce;
             }
 
             position += velocity * delta;
@@ -88,7 +108,8 @@ public class PathPrediction
                 Position = position,
                 Velocity = velocity,
                 MajorInfluence = majorInfluence,
-                Time = relTime
+                Time = relTime,
+                Accelerating = accelerating
             };
         }
     }
@@ -97,7 +118,11 @@ public class PathPrediction
             ? FindOrbitT(position - body.GetPosition(time), velocity - body.GetVelocity(time), body, time) - 2f
             : 120;
     private static float FindOrbitT(Vector3D position, Vector3D velocity, CelestialBody majorInfluenceBody, DateTime time)
-        => (float)Solve.KeplarOrbit(position - majorInfluenceBody.GetPosition(time), velocity, majorInfluenceBody.Mass, time).T;
+    {
+        var orbit = Solve.KeplarOrbit(position, velocity, majorInfluenceBody.Mass, time);
+        if (orbit.Type == OrbitType.Elliptical) return (float)orbit.T;
+        return 300f;
+    }
     public void Reset()
     {
         points.Clear();

@@ -1,15 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Raylib_cs.Raylib;
-
-public class ParticleEmitter
+public class EngineEmitter
 {
     private List<Particle> particles;
-    public Vector3 position;
-    public Vector3 velocity;
+    private readonly DynamicSimulation simulation;
     private float particleSize;
     private readonly Color particleStartColor;
     private readonly Color particleEndColor;
@@ -17,11 +9,10 @@ public class ParticleEmitter
     private float emitRate;
     private double lastEmitTime;
 
-    public ParticleEmitter(Vector3 position, Vector3 velocity, float particleSize, Color particleStartColor, Color particleEndColor, int maxParticles, float emitRate)
+    public EngineEmitter(DynamicSimulation simulation, float particleSize, Color particleStartColor, Color particleEndColor, int maxParticles, float emitRate)
     {
         this.particles = new List<Particle>();
-        this.position = position;
-        this.velocity = velocity;
+        this.simulation = simulation;
         this.particleSize = particleSize;
         this.particleStartColor = particleStartColor;
         this.particleEndColor = particleEndColor;
@@ -53,6 +44,8 @@ public class ParticleEmitter
 
     private void EmitParticle()
     {
+        var position = new Vector3(0,0,-.93f);
+        var velocity = new Vector3(0,0,-.02f);
         var pv = velocity + new Vector3(Random.Shared.Next(-10, 10) * .00008f, Random.Shared.Next(-10, 10) * .00008f, Random.Shared.Next(-10, 10) * .00008f);
         particles.Add(new Particle(position, particleSize, particleStartColor, pv));
     }
@@ -63,7 +56,8 @@ public class ParticleEmitter
         {
             var p = particleSize * particle.Lifetime;
             Color lerpedColor = particleStartColor.Lerp(particleEndColor, particle.Traveled / 2f);
-            DrawCube(particle.Position, p, p, p, lerpedColor);
+            
+            DrawCube(Vector3.Transform(particle.Position, simulation.Rotation) + simulation.Position, p, p, p, lerpedColor);
         }
     }
 

@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 public class DynamicSimulation
 {
     internal readonly Simulation simulation;
+    public Quaternion Rotation;
     public Vector3D Position { get; set; }
     public Vector3D Velocity { get; set; }
     public CelestialBody? MajorInfluenceBody { get; set; }
@@ -24,8 +25,9 @@ public class DynamicSimulation
         var forward = new Vector3(0, 0, 1); // Assuming forward direction is along the Z-axis
         var velocityVector = new Vector3((float)v.X, (float)v.Y, (float)v.Z);
         var rotationAxis = Vector3.Cross(forward, velocityVector).Normalize();
-        var degrees = MathF.Acos(Vector3.Dot(forward.Normalize(), velocityVector.Normalize())) * (180 / MathF.PI);
-
+        var rad = MathF.Acos(Vector3.Dot(forward.Normalize(), velocityVector.Normalize()));
+        var degrees = rad * (180 / MathF.PI);
+        Rotation = Quaternion.CreateFromAxisAngle(rotationAxis, rad);
         DrawModelEx(model, Position, rotationAxis, degrees, new Vector3(1, 1, 1), Color.White);
     }
 }
