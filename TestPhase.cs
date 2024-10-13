@@ -55,7 +55,7 @@ public static class TestGamePhase
                         Game.PlayerShip.DynamicSimulation.Velocity = currentShipPoint.Velocity;
                         Game.PlayerShip.DynamicSimulation.MajorInfluenceBody = currentShipPoint.MajorInfluence;
                         Game.PlayerShip.enginePlaying = currentShipPoint.Accelerating;
-                        Game.Simulation.Speed = 3;
+                        Game.Simulation.Speed = 1;
                     }
                     else
                     {
@@ -86,7 +86,7 @@ public static class TestGamePhase
         Vector2 closestViewPos = default;
         for (int i = 0; i < predictionDisplay.Length - 1; i++)
         {
-            if (predictionDisplay[i].Position.IsBehindCamera() || predictionDisplay[i + 1].Position.IsBehindCamera()) continue;
+           //if (predictionDisplay[i].Position.IsBehindCamera() || predictionDisplay[i + 1].Position.IsBehindCamera()) continue;
             var pA = GetWorldToScreen(RelativePredictedPoint(predictionDisplay[i]), Camera.Current);
             var pB = GetWorldToScreen(RelativePredictedPoint(predictionDisplay[i + 1]), Camera.Current);
 
@@ -105,7 +105,7 @@ public static class TestGamePhase
             }
             else
             {
-                DrawLine((int)Math.Round(pA.X), (int)Math.Round(pA.Y), (int)Math.Round(pB.X), (int)Math.Round(pB.Y), Color.Beige);
+                DrawLine((int)Math.Round(pA.X), (int)Math.Round(pA.Y), (int)Math.Round(pB.X), (int)Math.Round(pB.Y), predictionDisplay[i].Accelerating?Color.Gold:Color.Beige);
                 var dtomouse = Vector2.Distance(pA, mpos);
                 if (dtomouse < distance)
                 {

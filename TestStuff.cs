@@ -4,7 +4,7 @@ public static class Test
     {
         var simulation = new Simulation(new DateTime(2400,1,1));
         var sun = CelestialBody
-            .CreateCelestial(Vector3D.Zero, 100000f)
+            .CreateCelestial(Vector3D.Zero, 200000f)
             .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.YellowSun, 12), size: 60f, Color.Yellow)
             .WithInfo(name: "Aeon Prime");
 

@@ -16,7 +16,7 @@ public class PathPrediction
         Predict(sim, dsim.Position, dsim.Velocity, dsim.MajorInfluenceBody, sim.Time);
     }
 
-    private void Predict(Simulation sim, Vector3D position, Vector3D velocity, CelestialBody? majorInfluence, DateTime startTime, float? time = null, Maneuver? maneuver = null)
+    private void Predict(Simulation sim, Vector3D position, Vector3D velocity, CelestialBody? majorInfluence, DateTime startTime)
     {
         if (majorInfluence == null)
         {
@@ -24,15 +24,34 @@ public class PathPrediction
                 .Select(b => (influence: Solve.Influence(position, b.GetPosition(startTime), b.Mass), body: b as CelestialBody))
                 .MaxBy(b => b.influence).body;
         }
-        var expected = time.HasValue ? time.Value : ExpectedPredictionLengthSeconds(position, velocity + (maneuver != null ? maneuver.DeltaV : Vector3D.Zero), majorInfluence, startTime);
-        if (expected > 10)
-        {
-            pendingPrediction = expected - 10;
-        }
-        else
-        {
-            pendingPrediction -= expected;
-        }
+        float expected = 10;
+        var validPoints = points.Where(p => p.Time > Game.Simulation.Time);
+        var last = validPoints.LastOrDefault();
+        var currentIntercept = validPoints.FirstOrDefault(x => x.MajorInfluence != last?.MajorInfluence)?.Time ?? Game.Simulation.Time;
+        var pos = last?.Position ?? position;
+        var vel = last?.Velocity ?? velocity;
+        var body = last?.MajorInfluence ?? majorInfluence;
+        var ctime = last?.Time ?? startTime;
+        var man = maneuvers.LastOrDefault(m => m.Time >= currentIntercept && m.Point?.MajorInfluence == body);
+        var manVel = man?.DeltaV ?? Vector3D.Zero;
+        //if (man != null && man.Time.AddSeconds(man.BurnTime(SHIP_ACCELERATION)) > ctime) ctime = man.Time.AddSeconds(man.BurnTime(SHIP_ACCELERATION));
+        var t = SegmentLength(man?.Point?.Position ?? pos, vel + manVel, body, ctime);
+        expected = (man?.Time ??currentIntercept).AddSeconds(t) > ctime ? 10 : 0;
+        // bool multiInfluence = false;
+        // for (int i = 0; i < points.Count - 1; i++)
+        // {
+        //     if (points[i].MajorInfluence != points[i + 1].MajorInfluence)
+        //     {
+
+        //     }
+        // }
+
+        // if (!multiInfluence)
+        // {
+        //     var last = points.Last();
+        //     SegmentLength(last.Position, last.Velocity, last.MajorInfluence, last.Time); 
+        // }
+
         var predictionTime = Math.Min(10, expected);
         points.AddRange(YieldPredictions(
             sim: sim,
@@ -46,8 +65,10 @@ public class PathPrediction
     {
         var last = maneuvers.LastOrDefault();
         if (last != null && time <= last.Time) return;
+        var point = points.FirstOrDefault(p => p.Time == time);
         var m = new Maneuver()
         {
+            Point = point,
             Time = time
         };
         maneuvers.Add(m);
@@ -62,11 +83,8 @@ public class PathPrediction
     }
     public void Update()
     {
-        if (pendingPrediction > 0)
-        {
-            var point = points.Last();
-            Predict(sim, point.Position, point.Velocity, point.MajorInfluence, point.Time, pendingPrediction);
-        }
+        var point = points.LastOrDefault();
+        Predict(sim, point.Position, point.Velocity, point.MajorInfluence, point.Time);
     }
     private void UpdatePredictionForManeuver(Maneuver? m)
     {
@@ -74,7 +92,7 @@ public class PathPrediction
         points.RemoveAll(p => p.Time > m.Time);
         var last = points.LastOrDefault();
         if (last == null) return;
-        Predict(sim, last.Position, last.Velocity, last.MajorInfluence, m.Time, null, m);
+        Predict(sim, last.Position, last.Velocity, last.MajorInfluence, m.Time);
     }
 
     IEnumerable<PredictedPoint> YieldPredictions(Simulation sim, Vector3D position, Vector3D velocity, DateTime relTime, int seconds)
@@ -109,19 +127,19 @@ public class PathPrediction
                 Velocity = velocity,
                 MajorInfluence = majorInfluence,
                 Time = relTime,
-                Accelerating = accelerating
+                Accelerating = accelerating,
             };
         }
     }
-    static float ExpectedPredictionLengthSeconds(Vector3D position, Vector3D velocity, CelestialBody? body, DateTime time)
+    static float SegmentLength(Vector3D position, Vector3D velocity, CelestialBody? body, DateTime time)
         => body != null
-            ? FindOrbitT(position - body.GetPosition(time), velocity - body.GetVelocity(time), body, time) - 2f
+            ? FindOrbitT(position, velocity, body, time) - 2f
             : 120;
     private static float FindOrbitT(Vector3D position, Vector3D velocity, CelestialBody majorInfluenceBody, DateTime time)
     {
-        var orbit = Solve.KeplarOrbit(position, velocity, majorInfluenceBody.Mass, time);
-        if (orbit.Type == OrbitType.Elliptical) return (float)orbit.T;
-        return 300f;
+        var body = majorInfluenceBody;
+        var orbit = Solve.KeplarOrbit(position - body.GetPosition(time), velocity - body.GetVelocity(time), body.Mass, time);
+        return (float)orbit.T;
     }
     public void Reset()
     {
@@ -148,11 +166,17 @@ public class Maneuver
 {
     public Vector3D DeltaV;
     public DateTime Time;
+    internal PredictedPoint? Point;
+
     public Vector3D DVAtTime(DateTime time, float acceleration)
     {
         var remaining = DeltaV.Magnitude() - ((time - Time).TotalSeconds * acceleration);
         if (remaining < 0) return Vector3D.Zero;
         var force = Math.Min(remaining, acceleration);
         return DeltaV.Normalize() * force;
+    }
+    public float BurnTime(float acceleration)
+    {
+        return (float)DeltaV.Magnitude() / acceleration;
     }
 }
