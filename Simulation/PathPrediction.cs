@@ -1,3 +1,5 @@
+using System.IO.Compression;
+
 public class PathPrediction
 {
     const float delta = 1f / TARGET_FPS;
@@ -18,49 +20,91 @@ public class PathPrediction
 
     private void Predict(Simulation sim, Vector3D position, Vector3D velocity, CelestialBody? majorInfluence, DateTime startTime)
     {
-        if (majorInfluence == null)
+        //calculate prediction length
+        var predictionStart = Game.Simulation.Time;
+        var validPoints = points.Where(p => p.Time >= Game.Simulation.Time);
+        var predictionEnd = validPoints.LastOrDefault()?.Time ?? Game.Simulation.Time;
+        var transferPoints = Transfers(validPoints).ToArray();
+        var lastTransferPoint = transferPoints.LastOrDefault();
+        var lastManeuver = maneuvers.LastOrDefault(m
+            => m.Time >= Game.Simulation.Time && (lastTransferPoint == null || m.Time > lastTransferPoint.Time));
+
+        var significantPoint = lastManeuver?.Point ?? lastTransferPoint ?? validPoints.FirstOrDefault(p => p.Accelerating == false);
+        var predictionEndPoint = significantPoint;
+        var expectedPredictionEnd = predictionEndPoint?.Time ?? Game.Simulation.Time;
+        if (lastManeuver != null)
         {
-            majorInfluence = sim.OrbitingBodies.Where(b => b is CelestialBody)
-                .Select(b => (influence: Solve.Influence(position, b.GetPosition(startTime), b.Mass), body: b as CelestialBody))
-                .MaxBy(b => b.influence).body;
+            expectedPredictionEnd = expectedPredictionEnd.AddSeconds(lastManeuver.BurnTime(SHIP_ACCELERATION));
         }
-        float expected = 10;
-        var validPoints = points.Where(p => p.Time > Game.Simulation.Time);
-        var last = validPoints.LastOrDefault();
-        var currentIntercept = validPoints.FirstOrDefault(x => x.MajorInfluence != last?.MajorInfluence)?.Time ?? Game.Simulation.Time;
-        var pos = last?.Position ?? position;
-        var vel = last?.Velocity ?? velocity;
-        var body = last?.MajorInfluence ?? majorInfluence;
-        var ctime = last?.Time ?? startTime;
-        var man = maneuvers.LastOrDefault(m => m.Time >= currentIntercept && m.Point?.MajorInfluence == body);
-        var manVel = man?.DeltaV ?? Vector3D.Zero;
-        //if (man != null && man.Time.AddSeconds(man.BurnTime(SHIP_ACCELERATION)) > ctime) ctime = man.Time.AddSeconds(man.BurnTime(SHIP_ACCELERATION));
-        var t = SegmentLength(man?.Point?.Position ?? pos, vel + manVel, body, ctime);
-        expected = (man?.Time ??currentIntercept).AddSeconds(t) > ctime ? 10 : 0;
-        // bool multiInfluence = false;
-        // for (int i = 0; i < points.Count - 1; i++)
-        // {
-        //     if (points[i].MajorInfluence != points[i + 1].MajorInfluence)
-        //     {
+        if (transferPoints.Length < 2)
+        {
+            var influence = significantPoint?.MajorInfluence;
+            var ship = Game.PlayerShip.DynamicSimulation;
+            if (influence == null)
+            {
+                influence = Game.Simulation.OrbitingBodies
+                    .Where(o => o is CelestialBody)
+                    .MaxBy(o => Solve.Influence(ship.Position, o.GetPosition(Game.Simulation.Time), o.Mass))
+                    as CelestialBody;
+            }
+            if (influence != null)
+            {
+                var sp = significantPoint?.Position ?? ship.Position;
+                var sv = significantPoint?.Velocity ?? ship.Velocity;
+                if (lastManeuver != null)
+                {
+                    sv += lastManeuver.DeltaV;
+                }
+                var t = FindOrbitT(sp, sv, influence, significantPoint?.Time ?? Game.Simulation.Time);
+                if (t != null)
+                {
+                    expectedPredictionEnd = expectedPredictionEnd.AddSeconds(t.Value);
+                }
+                else
+                {
+                    var last = maneuvers.LastOrDefault();
+                    if (last != null)
+                    {
+                        expectedPredictionEnd = last.Time.AddSeconds(last.BurnTime(SHIP_ACCELERATION));
+                        var ctime = expectedPredictionEnd - (points.FirstOrDefault()?.Time ?? Game.Simulation.Time);
+                        expectedPredictionEnd = expectedPredictionEnd.Add(ctime);
+                    }
+                    else
+                    {
+                        expectedPredictionEnd = expectedPredictionEnd.AddSeconds(100);
+                    }
+                }
+            }
+        }
+        else
+        {
+            expectedPredictionEnd = transferPoints.Last().Time.AddSeconds(60);
+        }
+        if (expectedPredictionEnd == Game.Simulation.Time)
+        {
+            expectedPredictionEnd = expectedPredictionEnd.AddSeconds(120);
+        }
 
-        //     }
-        // }
-
-        // if (!multiInfluence)
-        // {
-        //     var last = points.Last();
-        //     SegmentLength(last.Position, last.Velocity, last.MajorInfluence, last.Time); 
-        // }
-
-        var predictionTime = Math.Min(10, expected);
         points.AddRange(YieldPredictions(
             sim: sim,
             position: position,
             velocity: velocity,
             relTime: startTime,
-            seconds: (int)predictionTime));
+            seconds: expectedPredictionEnd > predictionEnd ? 10 : 0));
     }
-
+    static IEnumerable<PredictedPoint> Transfers(IEnumerable<PredictedPoint> points)
+    {
+        if (points == null || !points.Any()) yield break;
+        CelestialBody? body = points.First().MajorInfluence;
+        foreach (var point in points)
+        {
+            if (point.MajorInfluence != body)
+            {
+                yield return point;
+                body = point.MajorInfluence;
+            }
+        }
+    }
     public void AddManeuver(DateTime time)
     {
         var last = maneuvers.LastOrDefault();
@@ -131,14 +175,11 @@ public class PathPrediction
             };
         }
     }
-    static float SegmentLength(Vector3D position, Vector3D velocity, CelestialBody? body, DateTime time)
-        => body != null
-            ? FindOrbitT(position, velocity, body, time) - 2f
-            : 120;
-    private static float FindOrbitT(Vector3D position, Vector3D velocity, CelestialBody majorInfluenceBody, DateTime time)
+    private static float? FindOrbitT(Vector3D position, Vector3D velocity, CelestialBody majorInfluenceBody, DateTime time)
     {
         var body = majorInfluenceBody;
         var orbit = Solve.KeplarOrbit(position - body.GetPosition(time), velocity - body.GetVelocity(time), body.Mass, time);
+        if (orbit.Type == OrbitType.Hyperbolic) return null;
         return (float)orbit.T;
     }
     public void Reset()

@@ -6,7 +6,7 @@ public static class TestGamePhase
 
     public static unsafe void Run()
     {
-        InitWindow(2000, 2000, "sim");
+        InitWindow(1000, 1000, "sim");
         SetTargetFPS(60);
         var background = new Background();
         Shaders.Load();
@@ -14,7 +14,7 @@ public static class TestGamePhase
         Camera.Orbit(Game.PlayerShip);
         var shipPrediction = new PathPrediction(Game.Simulation, Game.PlayerShip.DynamicSimulation);
         Game.PlayerShip.DynamicSimulation.MajorInfluenceBody = shipPrediction.Points.First().MajorInfluence;
-        DialogController.Play("test");
+        //DialogController.Play("test");
         ulong iter = 0;
         bool playing = false;
         while (!WindowShouldClose())
@@ -55,7 +55,7 @@ public static class TestGamePhase
                         Game.PlayerShip.DynamicSimulation.Velocity = currentShipPoint.Velocity;
                         Game.PlayerShip.DynamicSimulation.MajorInfluenceBody = currentShipPoint.MajorInfluence;
                         Game.PlayerShip.enginePlaying = currentShipPoint.Accelerating;
-                        Game.Simulation.Speed = 1;
+                        Game.Simulation.Speed = 3;
                     }
                     else
                     {

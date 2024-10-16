@@ -1,4 +1,4 @@
-public class PredictedPoint
+public record PredictedPoint
 {
     public DateTime Time;
     public Vector3D Position;
