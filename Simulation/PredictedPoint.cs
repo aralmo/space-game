@@ -7,5 +7,4 @@ public record PredictedPoint
     public bool IsJoin;
     public CelestialBody? MajorInfluence;
     internal bool Accelerating;
-    internal bool IsCapturing;
 }

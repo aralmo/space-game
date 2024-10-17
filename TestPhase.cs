@@ -127,15 +127,41 @@ public static class TestGamePhase
                     closestViewPos = pA;
                 }
             }
-            //draw a capture icon
-            if (!predictionDisplay[i].IsCapturing && predictionDisplay[i + 1].IsCapturing)
+        }
+        //draw the closest encounter points
+        foreach (var encounter in shipPrediction.ClosestEncounters)
+        {
+            var inf = Game.PlayerShip.DynamicSimulation.MajorInfluenceBody;
+            if (inf != null)
             {
-                var p = RelativePredictedPoint(predictionDisplay[i]);
-                if (!p.IsBehindCamera())
-                {
-                    var viewPos = GetWorldToScreen(p,Camera.Current);
-                    DrawTexture(Icons.Join, viewPos.X.RoundInt(), viewPos.Y.RoundInt(), Color.Green);
+                if (inf.InHierarchy(encounter.obj)) continue;
+            }
+            var diff = encounter.time - Game.Simulation.Time;
+            var p = encounter.obj.GetPosition(encounter.time, false) + (encounter.obj.CentralBody?.GetPosition(Game.Simulation.Time) ?? Vector3D.Zero);
+            if (!p.IsBehindCamera(Camera.Current))
+            {
 
+                var viewPos = GetWorldToScreen(p, Camera.Current);
+                //todo: improve what to show
+                if (encounter.distance < MIN_CAPTURE_DISTANCE)
+                {
+                    Icons.Join.Draw(viewPos, Color.Green);
+                }
+                else
+                {
+                    if (encounter.distance < 30)
+                    {
+                        //draw the ship position at encounter time
+                        var point = shipPrediction.Points.FirstOrDefault(p => p.Time == encounter.time);
+                        if (point != null)
+                        {
+                            var sviewPos = GetWorldToScreen(RelativePredictedPoint(point), Camera.Current);
+                            DrawCircleLines(sviewPos.X.RoundInt(), sviewPos.Y.RoundInt(), 5f, Color.Green);
+
+                        }
+                        //draw object position at encounter time
+                        DrawCircleLines(viewPos.X.RoundInt(), viewPos.Y.RoundInt(), 5f, Color.Green);
+                    }
                 }
             }
 
@@ -187,19 +213,20 @@ public static class TestGamePhase
             forwardVector = (maneuverPoint.Velocity - planeOfReference.GetVelocity(maneuverPoint.Time)).Normalize();
         }
         var qVector = Vector3D.Cross(forwardVector, upVector).Normalize();
-
+        float ACCEL = MANEUVER_ACCELERATION;
+        if (IsKeyDown(KeyboardKey.LeftShift)) ACCEL /= 20;
         if (IsKeyDown(KeyboardKey.W)) shipPrediction
-            .AddDeltaV(forwardVector * MANEUVER_ACCELERATION);
+            .AddDeltaV(forwardVector * ACCEL);
         if (IsKeyDown(KeyboardKey.S)) shipPrediction
-            .AddDeltaV(forwardVector * -MANEUVER_ACCELERATION);
+            .AddDeltaV(forwardVector * -ACCEL);
         if (IsKeyDown(KeyboardKey.D)) shipPrediction
-            .AddDeltaV(qVector * MANEUVER_ACCELERATION);
+            .AddDeltaV(qVector * ACCEL);
         if (IsKeyDown(KeyboardKey.A)) shipPrediction
-            .AddDeltaV(qVector * -MANEUVER_ACCELERATION);
+            .AddDeltaV(qVector * -ACCEL);
         if (IsKeyDown(KeyboardKey.Q)) shipPrediction
-            .AddDeltaV(upVector * MANEUVER_ACCELERATION);
+            .AddDeltaV(upVector * ACCEL);
         if (IsKeyDown(KeyboardKey.Z)) shipPrediction
-            .AddDeltaV(upVector * -MANEUVER_ACCELERATION);
+            .AddDeltaV(upVector * -ACCEL);
     }
 
     private static unsafe void TESTDrawBodyInfluences()
