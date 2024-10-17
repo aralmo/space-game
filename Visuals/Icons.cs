@@ -1,7 +1,11 @@
 public static class Icons
 {
+    static Texture2D? collision;
+    public static Texture2D Collision { get 
+        => (collision.HasValue ? collision : collision = Get("collision")).Value; }
+
     static Dictionary<string, Texture2D> icons = new();
-    public static Texture2D Get(string icon)
+    static Texture2D Get(string icon)
     {
         if (!icons.TryGetValue(icon, out Texture2D texture))
         {

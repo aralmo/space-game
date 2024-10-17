@@ -134,7 +134,7 @@ public static class TestGamePhase
         {
             var point = RelativePredictedPoint(collisionNode);
             var viewPos = GetWorldToScreen(point, Camera.Current);
-            var colText = Icons.Get("collision");
+            var colText = Icons.Collision;
             DrawTexture(colText, viewPos.X.RoundInt() - colText.Width / 2, viewPos.Y.RoundInt() - colText.Height / 2, Color.White);
         }
         //draw the maneuver nodes position.
