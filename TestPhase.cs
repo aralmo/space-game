@@ -127,6 +127,18 @@ public static class TestGamePhase
                     closestViewPos = pA;
                 }
             }
+            //draw a capture icon
+            if (!predictionDisplay[i].IsCapturing && predictionDisplay[i + 1].IsCapturing)
+            {
+                var p = RelativePredictedPoint(predictionDisplay[i]);
+                if (!p.IsBehindCamera())
+                {
+                    var viewPos = GetWorldToScreen(p,Camera.Current);
+                    DrawTexture(Icons.Join, viewPos.X.RoundInt(), viewPos.Y.RoundInt(), Color.Green);
+
+                }
+            }
+
         }
         //draw a collision icon if the last predicted node is crashing into a body
         var collisionNode = shipPrediction.Points.LastOrDefault(x => x.IsCollision);
@@ -146,7 +158,7 @@ public static class TestGamePhase
             var viewPos = GetWorldToScreen(relPosition, Camera.Current);
             DrawCircleLines((int)Math.Round(viewPos.X), (int)Math.Round(viewPos.Y), 6f, Color.Beige);
         }
-        //draw where would a new maneuver be placed based on the mouse and handle adding it by clicking
+        //draw the maneuver placement gizmo
         if (distanceToMouse < 50)
         {
             DrawCircle((int)Math.Round(closestViewPos.X), (int)Math.Round(closestViewPos.Y), 6f, Color.Beige);

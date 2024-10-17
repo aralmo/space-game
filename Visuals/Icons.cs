@@ -3,7 +3,9 @@ public static class Icons
     static Texture2D? collision;
     public static Texture2D Collision { get 
         => (collision.HasValue ? collision : collision = Get("collision")).Value; }
-
+    static Texture2D? join;
+    public static Texture2D Join { get 
+        => (join.HasValue ? join : join = Get("join")).Value; }
     static Dictionary<string, Texture2D> icons = new();
     static Texture2D Get(string icon)
     {

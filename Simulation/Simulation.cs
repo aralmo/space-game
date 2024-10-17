@@ -13,7 +13,7 @@ public class Simulation
     {
         orbitingBodies.Add(body);
         return this;
-    }    
+    }
     public void Update()
     {
         float deltaTime = 1.0f / TARGET_FPS;
@@ -36,6 +36,10 @@ public class Simulation
                     DrawModel(body.Model.Value, position, (float)body.Size, Color.White);
                 }
             }
+            if (obj is StationaryOrbitObject soo)
+            {
+                soo.Draw3D(Game.Simulation.Time);
+            }
         }
     }
     public void Draw2D(Camera3D camera)
@@ -57,7 +61,7 @@ public class Simulation
                         DrawCircle((int)double.Round(screenPosition.X), (int)double.Round(screenPosition.Y), drawSize, body.FarColor);
                     }
                 }
-            }
+            } 
         }
     }
     public void DrawOrbits2D(Camera3D camera, out Vector3D? closestToCamera, OrbitingObject? centerBody = null)

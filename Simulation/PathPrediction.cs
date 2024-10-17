@@ -147,16 +147,8 @@ public class PathPrediction
             CelestialBody? majorInfluence = default;
             float topInfluence = float.MinValue;
             relTime = relTime.AddSeconds(delta);
-            foreach (CelestialBody body in sim.OrbitingBodies.Where(b => b is CelestialBody))
-            {
-                var influence = Solve.Influence(position, body.GetPosition(relTime), body.Mass);
-                if (influence > MIN_INFLUENCE)
-                {
-                    if (topInfluence < influence) { majorInfluence = body; topInfluence = influence; }
-                    var direction = (body.GetPosition(relTime) - position).Normalize();
-                    velocity += direction * influence * delta;
-                }
-            }
+            bool colliding = false;
+            bool capturing = false;
             bool accelerating = false;
             foreach (var man in maneuvers)
             {
@@ -164,9 +156,31 @@ public class PathPrediction
                 if (manForce.Magnitude() > 0) accelerating = true;
                 velocity += manForce;
             }
+            foreach (var obody in sim.OrbitingBodies)
+            {
+                if (obody is CelestialBody body)
+                {
+                    var influence = Solve.Influence(position, body.GetPosition(relTime), body.Mass);
+                    if (influence > MIN_INFLUENCE)
+                    {
+                        if (topInfluence < influence) { majorInfluence = body; topInfluence = influence; }
+                        var direction = (body.GetPosition(relTime) - position).Normalize();
+                        velocity += direction * influence * delta;
+                        colliding = IsColliding(position, body, relTime);
+                    }
+                }
+                if (obody is StationaryOrbitObject soo)
+                {
+                    if (Vector3D.Distance(soo.GetPosition(relTime), position) < MIN_CAPTURE_DISTANCE)
+                    {
+                        capturing = true;
+                    }
+                }
+            }
+
+
 
             position += velocity * delta;
-            var colliding = IsColliding(position, majorInfluence, relTime);
 
             yield return new PredictedPoint()
             {
@@ -175,7 +189,8 @@ public class PathPrediction
                 MajorInfluence = majorInfluence,
                 Time = relTime,
                 Accelerating = accelerating,
-                IsCollision = colliding
+                IsCollision = colliding,
+                IsCapturing = capturing
             };
             if (colliding)
             {

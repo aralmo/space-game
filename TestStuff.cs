@@ -12,7 +12,9 @@ public static class Test
             .CreateCelestial(centralBody: sun, radius: 2500f, mass: 900f,time: simulation.Time, eccentricity: 0.05f)
             .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.EarthLike, 1), size: 4f, Color.Blue)
             .WithInfo(name: "Aeon-2");
-
+        
+        var station = StationaryOrbitObject.CreateStationary(planet, Solve.CircularOrbit(30,planet.Mass,simulation.Time));
+            
         var planet2 = CelestialBody
             .CreateCelestial(centralBody: sun, radius: 1500f, mass: 600f,time: simulation.Time, eccentricity: 0.02f)
             .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.LavaPlanet, 2), size: 3f, Color.Blue)
@@ -21,6 +23,7 @@ public static class Test
         simulation
             .AddOrbitingBody(sun)
             .AddOrbitingBody(planet)
+            .AddOrbitingBody(station)
             .AddOrbitingBody(planet2)
             .AddOrbitingBody(CelestialBody
                 .CreateCelestial(centralBody: planet, radius: 85f, mass: 90f,time: simulation.Time, argumentOfPeriapsis: -1.5f)
