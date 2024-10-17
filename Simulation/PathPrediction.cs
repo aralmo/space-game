@@ -23,6 +23,7 @@ public class PathPrediction
         //calculate prediction length
         var predictionStart = Game.Simulation.Time;
         var validPoints = points.Where(p => p.Time >= Game.Simulation.Time);
+        if (validPoints.LastOrDefault()?.IsCollision ?? false) return;
         var predictionEnd = validPoints.LastOrDefault()?.Time ?? Game.Simulation.Time;
         var transferPoints = Transfers(validPoints).ToArray();
         var lastTransferPoint = transferPoints.LastOrDefault();
@@ -165,6 +166,8 @@ public class PathPrediction
             }
 
             position += velocity * delta;
+            var colliding = IsColliding(position, majorInfluence, relTime);
+
             yield return new PredictedPoint()
             {
                 Position = position,
@@ -172,9 +175,16 @@ public class PathPrediction
                 MajorInfluence = majorInfluence,
                 Time = relTime,
                 Accelerating = accelerating,
+                IsCollision = colliding
             };
+            if (colliding)
+            {
+                yield break;
+            }
         }
     }
+    static bool IsColliding(Vector3D point, CelestialBody body, DateTime t)
+        => Vector3D.Distance(point, body.GetPosition(t)) < body.Size * 1.1f;
     private static float? FindOrbitT(Vector3D position, Vector3D velocity, CelestialBody majorInfluenceBody, DateTime time)
     {
         var body = majorInfluenceBody;

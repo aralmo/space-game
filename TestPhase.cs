@@ -48,19 +48,7 @@ public static class TestGamePhase
                 Game.Simulation.Speed = 0;
                 if (playing)
                 {
-                    PredictedPoint? currentShipPoint = shipPrediction.Points.FirstOrDefault(t => t.Time >= Game.Simulation.Time);
-                    if (currentShipPoint != null)
-                    {
-                        Game.PlayerShip.DynamicSimulation.Position = currentShipPoint.Position;
-                        Game.PlayerShip.DynamicSimulation.Velocity = currentShipPoint.Velocity;
-                        Game.PlayerShip.DynamicSimulation.MajorInfluenceBody = currentShipPoint.MajorInfluence;
-                        Game.PlayerShip.enginePlaying = currentShipPoint.Accelerating;
-                        Game.Simulation.Speed = 3;
-                    }
-                    else
-                    {
-                        shipPrediction.Reset();
-                    }
+                    UpdateShipPosition(shipPrediction);
                 }
             }
             else
@@ -77,6 +65,23 @@ public static class TestGamePhase
         CloseWindow();
     }
 
+    private static unsafe void UpdateShipPosition(PathPrediction shipPrediction)
+    {
+        PredictedPoint? currentShipPoint = shipPrediction.Points.FirstOrDefault(t => t.Time >= Game.Simulation.Time);
+        if (currentShipPoint != null)
+        {
+            Game.PlayerShip.DynamicSimulation.Position = currentShipPoint.Position;
+            Game.PlayerShip.DynamicSimulation.Velocity = currentShipPoint.Velocity;
+            Game.PlayerShip.DynamicSimulation.MajorInfluenceBody = currentShipPoint.MajorInfluence;
+            Game.PlayerShip.enginePlaying = currentShipPoint.Accelerating;
+            Game.Simulation.Speed = 3;
+        }
+        else
+        {
+            shipPrediction.Reset();
+        }
+    }
+
     private static unsafe void DrawPredictedManeuver(PathPrediction shipPrediction)
     {
         var predictionDisplay = shipPrediction.Points.Where(p => p.Time >= Game.Simulation.Time).Decimate(400).ToArray();
@@ -84,11 +89,14 @@ public static class TestGamePhase
         float distance = float.MaxValue;
         PredictedPoint closest = default;
         Vector2 closestViewPos = default;
+        float dtomouse;
         for (int i = 0; i < predictionDisplay.Length - 1; i++)
         {
-           //if (predictionDisplay[i].Position.IsBehindCamera() || predictionDisplay[i + 1].Position.IsBehindCamera()) continue;
-            var pA = GetWorldToScreen(RelativePredictedPoint(predictionDisplay[i]), Camera.Current);
-            var pB = GetWorldToScreen(RelativePredictedPoint(predictionDisplay[i + 1]), Camera.Current);
+            var prA = RelativePredictedPoint(predictionDisplay[i]);
+            var prB = RelativePredictedPoint(predictionDisplay[i + 1]);
+            if (prA.IsBehindCamera() || prB.IsBehindCamera()) continue;
+            var pA = GetWorldToScreen(prA, Camera.Current);
+            var pB = GetWorldToScreen(prB, Camera.Current);
 
             if (predictionDisplay[i].MajorInfluence != predictionDisplay[i + 1].MajorInfluence)
             {
@@ -105,8 +113,8 @@ public static class TestGamePhase
             }
             else
             {
-                DrawLine((int)Math.Round(pA.X), (int)Math.Round(pA.Y), (int)Math.Round(pB.X), (int)Math.Round(pB.Y), predictionDisplay[i].Accelerating?Color.Gold:Color.Beige);
-                var dtomouse = Vector2.Distance(pA, mpos);
+                DrawLine((int)Math.Round(pA.X), (int)Math.Round(pA.Y), (int)Math.Round(pB.X), (int)Math.Round(pB.Y), predictionDisplay[i].Accelerating ? Color.Gold : Color.Beige);
+                dtomouse = Vector2.Distance(pA, mpos);
                 if (dtomouse < distance)
                 {
                     distance = dtomouse;
@@ -123,7 +131,7 @@ public static class TestGamePhase
             var viewPos = GetWorldToScreen(relPosition, Camera.Current);
             DrawCircleLines((int)Math.Round(viewPos.X), (int)Math.Round(viewPos.Y), 6f, Color.Beige);
         }
-        if (distance < float.MaxValue)
+        if (distance < 50)
         {
             DrawCircle((int)Math.Round(closestViewPos.X), (int)Math.Round(closestViewPos.Y), 6f, Color.Beige);
         }
