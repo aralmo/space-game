@@ -2,12 +2,23 @@ using System.IO.Compression;
 
 public class PathPrediction
 {
+    object predictionLock = new object();
+    public object pointsLock = new object();
     const float delta = 1f / SIM_FPS;
     private readonly Simulation sim;
     private readonly DynamicSimulation dsim;
     List<PredictedPoint> points;
     public IEnumerable<(OrbitingObject obj, DateTime time, float distance)> ClosestEncounters => closestFlybys.Select(cfb => (cfb.Key, cfb.Value.time, cfb.Value.distance));
-    public IEnumerable<PredictedPoint> Points => points;
+    public IEnumerable<PredictedPoint> Points
+    {
+        get
+        {
+            lock (pointsLock)
+            {
+                return points.ToArray();
+            }
+        }
+    }
     public IEnumerable<Maneuver> Maneuvers => maneuvers;
     List<Maneuver> maneuvers = new();
     Dictionary<OrbitingObject, (float distance, DateTime time)> closestFlybys = new();
@@ -17,7 +28,6 @@ public class PathPrediction
         this.sim = sim;
         this.dsim = dsim;
         points = new();
-        Predict(sim, dsim.Position, dsim.Velocity, dsim.MajorInfluenceBody, sim.Time);
     }
 
     private void Predict(Simulation sim, Vector3D position, Vector3D velocity, CelestialBody? majorInfluence, DateTime startTime)
@@ -25,7 +35,10 @@ public class PathPrediction
         //calculate prediction length
         var predictionStart = Game.Simulation.Time;
         var validPoints = points.Where(p => p.Time >= Game.Simulation.Time);
-        if (validPoints.LastOrDefault()?.IsCollision ?? false) return;
+        var l = validPoints.LastOrDefault();
+        if (l?.IsCollision ?? false) return;
+        if (l?.IsJoin ?? false) return;
+
         var predictionEnd = validPoints.LastOrDefault()?.Time ?? Game.Simulation.Time;
         var transferPoints = Transfers(validPoints).ToArray();
         var lastTransferPoint = transferPoints.LastOrDefault();
@@ -83,6 +96,7 @@ public class PathPrediction
         {
             expectedPredictionEnd = transferPoints.Last().Time.AddSeconds(60);
         }
+
         if (expectedPredictionEnd == Game.Simulation.Time)
         {
             expectedPredictionEnd = expectedPredictionEnd.AddSeconds(120);
@@ -90,21 +104,36 @@ public class PathPrediction
         var remaining = expectedPredictionEnd - predictionEnd;
         if (remaining.TotalSeconds > 0)
         {
-            points.AddRange(YieldPredictions(
-                sim: sim,
-                closestFlybys: closestFlybys,
-                position: position,
-                velocity: velocity,
-                relTime: startTime,
-                seconds: (int)Math.Min(60, remaining.TotalSeconds)));
+            var p = YieldPredictions(
+            sim: sim,
+            closestFlybys: closestFlybys,
+            position: position,
+            velocity: velocity,
+            relTime: startTime,
+            seconds: (int)Math.Min(60, remaining.TotalSeconds)).ToArray();
+            lock (pointsLock)
+            {
+                points.AddRange(p);
+            }
         }
     }
-
     Task predictionTask;
     public void StartAsync()
     {
-        predictionTask = Task.Run(()=>{
-
+        predictionTask = Task.Run(() =>
+        {
+            while (true)
+            {
+                lock (predictionLock)
+                {
+                    if (Game.PlayerShip?.DynamicSimulation != null
+                    && Game.PlayerShip?.Prediction != null)
+                    {
+                        Update();
+                    }
+                }
+                Thread.Sleep((int)(1000f / TARGET_FPS));
+            }
         });
     }
 
@@ -124,13 +153,16 @@ public class PathPrediction
     public void AddManeuver(Maneuver maneuver)
     {
         var last = maneuvers.LastOrDefault();
-        if (last != null && maneuver.Time <= last.Time) return;
+        if (last != null && (last.JoinTarget != null || maneuver.Time <= last.Time)) return;
         if (maneuver.Point == null)
         {
             maneuver.Point = points.FirstOrDefault(p => p.Time == maneuver.Time);
         }
-        maneuvers.Add(maneuver);
-        UpdatePredictionForManeuver(maneuver);
+        lock (predictionLock)
+        {
+            maneuvers.Add(maneuver);
+            UpdatePredictionForManeuver(maneuver);
+        }
     }
     public void AddManeuver(DateTime time)
     {
@@ -142,32 +174,45 @@ public class PathPrediction
     }
     public void AddDeltaV(Vector3D deltaV)
     {
-        var m = maneuvers.LastOrDefault();
-        if (m == null) return;
-        m.DeltaV += deltaV;
-        UpdatePredictionForManeuver(m);
+        lock (predictionLock)
+        {
+            var m = maneuvers.LastOrDefault();
+            if (m == null || m.JoinTarget != null) return;
+            m.DeltaV += deltaV;
+            UpdatePredictionForManeuver(m);
+        }
     }
     public void Update()
     {
         var point = points.LastOrDefault();
-        Predict(sim, point.Position, point.Velocity, point.MajorInfluence, point.Time);
+        if (point != null)
+        {
+            Predict(sim, point.Position, point.Velocity, point.MajorInfluence, point.Time);
+        }
+        else
+        {
+            Predict(sim, dsim.Position, dsim.Velocity, dsim.MajorInfluenceBody, sim.Time);
+        }
     }
     private void UpdatePredictionForManeuver(Maneuver? m)
     {
         if (m == null) return;
         points.RemoveAll(p => p.Time > m.Time);
-        RemoveAfterCloseBy(m);
+        RemoveCloseBysAfterManeuver(m);
         var last = points.LastOrDefault();
         if (last == null) return;
         Predict(sim, last.Position, last.Velocity, last.MajorInfluence, m.Time);
     }
 
-    private void RemoveAfterCloseBy(Maneuver? m)
+    private void RemoveCloseBysAfterManeuver(Maneuver? m)
     {
-        var ctr = closestFlybys.Where(p => p.Value.time > m.Time).ToArray();
-        foreach (var c in ctr)
+        lock (closestFlybys)
         {
-            closestFlybys.Remove(c.Key);
+            var ctr = closestFlybys.Where(p => p.Value.time > m.Time).ToArray();
+            foreach (var c in ctr)
+            {
+                closestFlybys.Remove(c.Key);
+            }
         }
     }
 
@@ -180,9 +225,10 @@ public class PathPrediction
             float topInfluence = float.MinValue;
             relTime = relTime.AddSeconds(delta);
             bool colliding = false;
+            bool joining = false;
             foreach (var man in maneuvers)
             {
-                var manForce = man.DVAtTime(relTime, Constants.SHIP_ACCELERATION) * delta;
+                var manForce = man.DVAtTime(relTime, SHIP_ACCELERATION) * delta;
                 if (manForce.Magnitude() > 0)
                 {
                     timeAccelerating += delta;
@@ -192,21 +238,28 @@ public class PathPrediction
                     timeAccelerating = 0;
                 }
                 velocity += manForce;
+                if (man.JoinTarget != null && relTime >= man.Time.AddSeconds(man.BurnTime(SHIP_ACCELERATION)))
+                {
+                    joining = true;
+                }
             }
             foreach (var obody in sim.OrbitingBodies)
             {
                 var bodypos = obody.GetPosition(relTime);
                 var distance = (float)Vector3D.Distance(position, bodypos);
-                if (closestFlybys.TryGetValue(obody, out (float distance, DateTime time) flyby))
+                lock (closestFlybys)
                 {
-                    if (flyby.distance > distance || flyby.time < Game.Simulation.Time)
+                    if (closestFlybys.TryGetValue(obody, out (float distance, DateTime time) flyby))
                     {
-                        closestFlybys[obody] = (distance, relTime);
+                        if (flyby.distance > distance || flyby.time < Game.Simulation.Time)
+                        {
+                            closestFlybys[obody] = (distance, relTime);
+                        }
                     }
-                }
-                else
-                {
-                    closestFlybys.Add(obody, (distance, relTime));
+                    else
+                    {
+                        closestFlybys.Add(obody, (distance, relTime));
+                    }
                 }
                 if (obody is CelestialBody body)
                 {
@@ -231,8 +284,9 @@ public class PathPrediction
                 Time = relTime,
                 TimeAccelerating = timeAccelerating,
                 IsCollision = colliding,
+                IsJoin = joining
             };
-            if (colliding)
+            if (colliding || joining)
             {
                 yield break;
             }
@@ -250,7 +304,10 @@ public class PathPrediction
     public void Reset()
     {
         points.Clear();
-        closestFlybys.Clear();
+        lock (closestFlybys)
+        {
+            closestFlybys.Clear();
+        }
         Predict(sim, dsim.Position, dsim.Velocity, dsim.MajorInfluenceBody, sim.Time);
     }
     public void RemoveManeuver()

@@ -14,7 +14,7 @@ public static class TestGamePhase
         SetupGame();
         Camera.Orbit(Game.PlayerShip);
         var shipPrediction = new PathPrediction(Game.Simulation, Game.PlayerShip.DynamicSimulation);
-        Game.PlayerShip.DynamicSimulation.MajorInfluenceBody = shipPrediction.Points.First().MajorInfluence;
+        shipPrediction.StartAsync();
         DialogController.Play("test");
         ulong iter = 0;
         bool playing = false;
@@ -27,7 +27,7 @@ public static class TestGamePhase
             Camera.Update();
             Game.Simulation.Update();
             Game.PlayerShip.Update();
-            shipPrediction.Update();
+            //shipPrediction.Update();
             BeginDrawing();
             background.Draw2D(Camera.Current, DateTime.UtcNow);
             if (!DialogController.Running) { Game.Simulation.DrawOrbits2D(Camera.Current, out Vector3D? _); }
@@ -75,7 +75,7 @@ public static class TestGamePhase
             Game.PlayerShip.DynamicSimulation.Position = currentShipPoint.Position;
             Game.PlayerShip.DynamicSimulation.Velocity = currentShipPoint.Velocity;
             Game.PlayerShip.DynamicSimulation.MajorInfluenceBody = currentShipPoint.MajorInfluence;
-            Game.PlayerShip.enginePlaying = currentShipPoint.TimeAccelerating > 0;
+            Game.PlayerShip.EnginePlaying = currentShipPoint.TimeAccelerating > 0;
             Game.Simulation.Speed = 1;
         }
         else
@@ -137,62 +137,74 @@ public static class TestGamePhase
                 }
             }
         }
+
+        var lastPoint = shipPrediction.Points?.LastOrDefault();
+        var joiningObject = lastPoint?.IsJoin ?? false;
         //draw the closest encounter points
-        foreach (var encounter in shipPrediction.ClosestEncounters.Where(e => e.obj is StationaryOrbitObject))
+        if (joiningObject)
         {
-            var inf = Game.PlayerShip.DynamicSimulation.MajorInfluenceBody;
-            if (inf != null)
+            var p = RelativePredictedPoint(lastPoint!);
+            var viewPos = GetWorldToScreen(p, Camera.Current);
+            Icons.Join.Draw(viewPos, Color.Green);
+        }
+        else
+        {
+            foreach (var encounter in shipPrediction.ClosestEncounters.Where(e => e.obj is StationaryOrbitObject))
             {
-                if (inf.InHierarchy(encounter.obj)) continue;
-            }
-            var diff = encounter.time - Game.Simulation.Time;
-            var p = encounter.obj.GetPosition(encounter.time, false) + (encounter.obj.CentralBody?.GetPosition(Game.Simulation.Time) ?? Vector3D.Zero);
-            if (!p.IsBehindCamera(Camera.Current))
-            {
-                var viewPos = GetWorldToScreen(p, Camera.Current);
-                if (encounter.distance < MIN_CAPTURE_DISTANCE)
+                var inf = Game.PlayerShip.DynamicSimulation.MajorInfluenceBody;
+                if (inf != null)
                 {
-                    Icons.Join.Draw(viewPos, Color.Green);
-                    if (Vector2.Distance(mouse_position, viewPos) < 20)
+                    if (inf.InHierarchy(encounter.obj)) continue;
+                }
+                var diff = encounter.time - Game.Simulation.Time;
+                var p = encounter.obj.GetPosition(encounter.time, false) + (encounter.obj.CentralBody?.GetPosition(Game.Simulation.Time) ?? Vector3D.Zero);
+                if (!p.IsBehindCamera(Camera.Current))
+                {
+                    var viewPos = GetWorldToScreen(p, Camera.Current);
+                    if (encounter.distance < MIN_CAPTURE_DISTANCE)
                     {
-                        DrawCircleLines(viewPos.X.RoundInt(), viewPos.Y.RoundInt(), 20f, Color.Green);
-                        mouse_control = false; //prevent other mouse controls
-                        if (IsMouseButtonPressed(MouseButton.Left))
+                        Icons.Join.Draw(viewPos, Color.Beige);
+                        if (Vector2.Distance(mouse_position, viewPos) < 20)
                         {
-                            //place a 'match velocities with target' maneuver
-                            var point = shipPrediction.Points.First(p => p.Time == encounter.time);
-                            var relVelocity = encounter.obj.GetVelocity(encounter.time)-point.Velocity;
-                            var burn = relVelocity.Magnitude() / SHIP_ACCELERATION;
-                            var burnStart = encounter.time.AddSeconds(-burn);
-                            var burnPoint = shipPrediction.Points.LastOrDefault(p => p.Time <= burnStart);
-                            if (burnPoint != null)
+                            DrawCircleLines(viewPos.X.RoundInt(), viewPos.Y.RoundInt(), 20f, Color.Beige);
+                            mouse_control = false; //prevent other mouse controls
+                            if (IsMouseButtonPressed(MouseButton.Left))
                             {
-                                shipPrediction.AddManeuver(new Maneuver()
+                                //place a 'match velocities with target' maneuver
+                                var point = shipPrediction.Points.First(p => p.Time == encounter.time);
+                                var relVelocity = encounter.obj.GetVelocity(encounter.time) - point.Velocity;
+                                var burn = relVelocity.Magnitude() / SHIP_ACCELERATION;
+                                var burnStart = encounter.time.AddSeconds(-(burn / 2));
+                                var burnPoint = shipPrediction.Points.LastOrDefault(p => p.Time <= burnStart);
+                                if (burnPoint != null)
                                 {
-                                    DeltaV = relVelocity,
-                                    Point = burnPoint,
-                                    Time = burnPoint.Time,
-                                    JoinTarget = encounter.obj
-                                });
-                                break;
+                                    shipPrediction.AddManeuver(new Maneuver()
+                                    {
+                                        DeltaV = relVelocity,
+                                        Point = burnPoint,
+                                        Time = burnPoint.Time,
+                                        JoinTarget = encounter.obj
+                                    });
+                                    break;
+                                }
                             }
                         }
                     }
-                }
-                else
-                {
-                    if (encounter.distance < 30)
+                    else
                     {
-                        //draw the ship position at encounter time
-                        var point = shipPrediction.Points.FirstOrDefault(p => p.Time == encounter.time);
-                        if (point != null)
+                        if (encounter.distance < 30)
                         {
-                            var sviewPos = GetWorldToScreen(RelativePredictedPoint(point), Camera.Current);
-                            DrawCircleLines(sviewPos.X.RoundInt(), sviewPos.Y.RoundInt(), 5f, Color.Green);
+                            //draw the ship position at encounter time
+                            var point = shipPrediction.Points.FirstOrDefault(p => p.Time == encounter.time);
+                            if (point != null)
+                            {
+                                var sviewPos = GetWorldToScreen(RelativePredictedPoint(point), Camera.Current);
+                                DrawCircleLines(sviewPos.X.RoundInt(), sviewPos.Y.RoundInt(), 5f, Color.Green);
 
+                            }
+                            //draw object position at encounter time
+                            DrawCircleLines(viewPos.X.RoundInt(), viewPos.Y.RoundInt(), 5f, Color.Green);
                         }
-                        //draw object position at encounter time
-                        DrawCircleLines(viewPos.X.RoundInt(), viewPos.Y.RoundInt(), 5f, Color.Green);
                     }
                 }
             }

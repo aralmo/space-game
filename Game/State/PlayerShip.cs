@@ -5,19 +5,19 @@ public class PlayerShip
     private readonly ModelAnimation[] animations;
     HashSet<string> playingEffects = new HashSet<string>();
     public Simulation Simulation { get; private set; }
+    public PathPrediction Prediction { get; private set; }
     public DynamicSimulation DynamicSimulation { get; private set; }
 
     private EngineEmitter engineParticles;
-    public bool enginePlaying = true;
+    public bool EnginePlaying = false;
     public unsafe PlayerShip(Simulation simulation, DynamicSimulation dynamicSimulation, string model)
     {
         Simulation = simulation;
         this.model = ShipModels.Load(model);
-        
         this.animations = ShipModels.LoadAnimations(model);
         var fc = animations[0].FrameCount;
         DynamicSimulation = dynamicSimulation;
-        dynamicSimulation.ModelSize = new Vector3(.2f,.2f,.2f);
+        dynamicSimulation.ModelSize = new Vector3(.2f, .2f, .2f);
         engineParticles = new EngineEmitter(
             dynamicSimulation,
             particleSize: .017f,
@@ -25,6 +25,8 @@ public class PlayerShip
             particleEndColor: Color.DarkBlue,
             maxParticles: 20,
             emitRate: 0.002f);
+        Prediction = new PathPrediction(simulation, dynamicSimulation);
+        Prediction.StartAsync();
     }
     public void Update()
     {
@@ -50,7 +52,7 @@ public class PlayerShip
                 UpdateModelAnimation(model, animations[0], hangarFrame);
             }
         }
-        if (enginePlaying)
+        if (EnginePlaying)
         {
             engineParticles.Update();
         }
@@ -58,7 +60,7 @@ public class PlayerShip
     public void Draw3D()
     {
         DynamicSimulation.Draw3D(model);
-        if (enginePlaying) engineParticles.Draw3D();
+        if (EnginePlaying) engineParticles.Draw3D();
     }
     public void PlayEffect(string effect)
     {

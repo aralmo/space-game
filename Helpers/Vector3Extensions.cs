@@ -20,7 +20,7 @@ public static class Vector3Extensions
 
     public static IEnumerable<T> Decimate<T>(this IEnumerable<T> points, int maxResolution)
     {
-        if (!points.Any()) yield break;
+        if (points == null || !points.Any()) yield break;
         var pointsA = points.ToArray();
         var step = pointsA.Length / maxResolution;
         if (pointsA.Length <= maxResolution)

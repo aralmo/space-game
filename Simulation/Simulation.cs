@@ -64,6 +64,8 @@ public class Simulation
             } 
         }
     }
+
+    public void DrawOrbits2D(Camera3D camera) => DrawOrbits2D(camera, out Vector3D? _);
     public void DrawOrbits2D(Camera3D camera, out Vector3D? closestToCamera, OrbitingObject? centerBody = null)
     {
         closestToCamera = default;
