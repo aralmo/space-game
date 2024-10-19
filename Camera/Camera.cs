@@ -8,7 +8,7 @@ public static class Camera
     }
     public static void CinematicView(PlayerShip ship)
     {
-        current = new CinematicViewCamera(ship.DynamicSimulation);
+        current = new CinematicViewCamera(ship);
     }
     public static void Update()
     {

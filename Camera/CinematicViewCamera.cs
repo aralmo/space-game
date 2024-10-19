@@ -1,20 +1,18 @@
 
-using System.Runtime.CompilerServices;
-
 public class CinematicViewCamera : ICameraController
 {
     Action update;
     public Camera3D Camera => camera;
     Camera3D camera;
     float t = 0f;
-    public CinematicViewCamera(DynamicSimulation ship)
+    public CinematicViewCamera(PlayerShip ship)
     {
-
+        var influence = (OrbitingObject) ship.Stationed ?? ship.DynamicSimulation.MajorInfluenceBody;
         float distance = .5f;
         this.camera = new Camera3D()
         {
-            Position = GetPosition(ship, distance, 0f),
-            Target = ship.Position,
+            Position = GetPosition(influence,ship.DynamicSimulation, distance, 0f),
+            Target = ship.DynamicSimulation.Position,
             Up = new Vector3(0.0f, 1.0f, 0.0f),
             FovY = 60.0f,
             Projection = CameraProjection.Perspective
@@ -22,19 +20,19 @@ public class CinematicViewCamera : ICameraController
         update = () =>
         {
             t += 0.0005f;
-            Vector3 pos = GetPosition(ship, distance, t);
+            Vector3 pos = GetPosition(influence,ship.DynamicSimulation, distance, t);
             this.camera.Position = pos;
-            this.camera.Target = ship.Position;
+            this.camera.Target = ship.DynamicSimulation.Position;
         };
         update();
     }
 
-    private static Vector3 GetPosition(DynamicSimulation ship, float distance, float t)
+    private static Vector3 GetPosition(OrbitingObject? influence, DynamicSimulation ship, float distance, float t)
     {
         Vector3 pos;
-        if (ship.MajorInfluenceBody != null)
+        if (influence != null)
         {
-            var rel_pos = (ship.Position - ship.MajorInfluenceBody.GetPosition(ship.simulation.Time)).Normalize() * distance;
+            var rel_pos = (ship.Position - influence.GetPosition(ship.simulation.Time)).Normalize() * distance;
             var up = ship.UpVector();
             var fwd = -Vector3.Cross(rel_pos, up).Normalize();
             float sinComponent = (float)Math.Sin(t) * 0.2f; // Adjust the multiplier for smoothness

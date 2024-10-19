@@ -34,7 +34,7 @@ public class PathPrediction
     {
         //calculate prediction length
         var predictionStart = Game.Simulation.Time;
-        var validPoints = points.Where(p => p.Time >= Game.Simulation.Time);
+        var validPoints = Points.Where(p => p.Time >= Game.Simulation.Time);
         var l = validPoints.LastOrDefault();
         if (l?.IsCollision ?? false) return;
         if (l?.IsJoin ?? false) return;
@@ -226,6 +226,7 @@ public class PathPrediction
             relTime = relTime.AddSeconds(delta);
             bool colliding = false;
             bool joining = false;
+            StationaryOrbitObject? joiningObject = null;
             foreach (var man in maneuvers)
             {
                 var manForce = man.DVAtTime(relTime, SHIP_ACCELERATION) * delta;
@@ -238,8 +239,9 @@ public class PathPrediction
                     timeAccelerating = 0;
                 }
                 velocity += manForce;
-                if (man.JoinTarget != null && relTime >= man.Time.AddSeconds(man.BurnTime(SHIP_ACCELERATION)))
+                if (man.JoinTarget != null && man.JoinTarget is StationaryOrbitObject station && relTime >= man.Time.AddSeconds(man.BurnTime(SHIP_ACCELERATION)))
                 {
+                    joiningObject = station;
                     joining = true;
                 }
             }
@@ -284,7 +286,8 @@ public class PathPrediction
                 Time = relTime,
                 TimeAccelerating = timeAccelerating,
                 IsCollision = colliding,
-                IsJoin = joining
+                IsJoin = joining,
+                JoinObject = joiningObject
             };
             if (colliding || joining)
             {

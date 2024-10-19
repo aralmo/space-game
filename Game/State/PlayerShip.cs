@@ -7,7 +7,11 @@ public class PlayerShip
     public Simulation Simulation { get; private set; }
     public PathPrediction Prediction { get; private set; }
     public DynamicSimulation DynamicSimulation { get; private set; }
-
+    /// <summary>
+    /// Indicates the object is stationed with velocity matched to another stationaryorbitobject
+    /// </summary>
+    /// <value></value>
+    public StationaryOrbitObject Stationed {get; set;}
     private EngineEmitter engineParticles;
     public bool EnginePlaying = false;
     public unsafe PlayerShip(Simulation simulation, DynamicSimulation dynamicSimulation, string model)

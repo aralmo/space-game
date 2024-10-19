@@ -15,31 +15,46 @@ public static class VNext
         ulong iter = 0;
         GameView[] Views = [
             new DialogView(),
+            new DockingView(),
             new PlayTurnView(),
-            new PlanningView(),            
+            new PlanningView(),
         ];
+        GameView? lastView = null;
         while (!WindowShouldClose())
         {
+            //view selector
             var view = Views.First(v => v.Running);
+            if (lastView == null || view != lastView)
+            {
+                view.Enter();
+                lastView?.Exit();
+            }
+            lastView = view;
+            //1 per second updates
             if (iter++ % TARGET_FPS == 0)
             {
                 Game.CurrentMission?.Update();
             }
+
+            //full time updates
             Camera.Update();
             Game.Simulation.Update();
             Game.PlayerShip.Update();
             view.Update();
 
+            //pre-3d 2d drawing
             BeginDrawing();
             background.Draw2D(Camera.Current, DateTime.UtcNow);
             Game.Simulation.Draw2D(Camera.Current);
             view.Draw2D();
 
+            //3d drawing
             BeginMode3D(Camera.Current);
             Game.PlayerShip.Draw3D();
             Game.Simulation.Draw3D(Camera.Current);
             view.Draw3D();
 
+            //post-3d 2d drawing
             EndMode3D();
             Game.CurrentMission?.Draw2D();
             view.Draw2DAfter();
