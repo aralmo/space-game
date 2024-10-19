@@ -32,7 +32,7 @@ public class PathPrediction
         var lastManeuver = maneuvers.LastOrDefault(m
             => m.Time >= Game.Simulation.Time && (lastTransferPoint == null || m.Time > lastTransferPoint.Time));
 
-        var significantPoint = lastManeuver?.Point ?? lastTransferPoint ?? validPoints.FirstOrDefault(p => p.Accelerating == false);
+        var significantPoint = lastManeuver?.Point ?? lastTransferPoint ?? validPoints.FirstOrDefault(p => p.TimeAccelerating > 0);
         var predictionEndPoint = significantPoint;
         var expectedPredictionEnd = predictionEndPoint?.Time ?? Game.Simulation.Time;
         if (lastManeuver != null)
@@ -96,7 +96,7 @@ public class PathPrediction
                 position: position,
                 velocity: velocity,
                 relTime: startTime,
-                seconds: (int) Math.Min(240, remaining.TotalSeconds)));
+                seconds: (int)Math.Min(60, remaining.TotalSeconds)));
         }
     }
     static IEnumerable<PredictedPoint> Transfers(IEnumerable<PredictedPoint> points)
@@ -158,17 +158,24 @@ public class PathPrediction
 
     IEnumerable<PredictedPoint> YieldPredictions(Simulation sim, Vector3D position, Vector3D velocity, DateTime relTime, int seconds, Dictionary<OrbitingObject, (float distance, DateTime time)> closestFlybys)
     {
+        float timeAccelerating = points.LastOrDefault()?.TimeAccelerating ?? 0;
         for (int i = 0; i < seconds * SIM_FPS; i++)
         {
             CelestialBody? majorInfluence = default;
             float topInfluence = float.MinValue;
             relTime = relTime.AddSeconds(delta);
             bool colliding = false;
-            bool accelerating = false;
             foreach (var man in maneuvers)
             {
                 var manForce = man.DVAtTime(relTime, Constants.SHIP_ACCELERATION) * delta;
-                if (manForce.Magnitude() > 0) accelerating = true;
+                if (manForce.Magnitude() > 0)
+                {
+                    timeAccelerating += delta;
+                }
+                else
+                {
+                    timeAccelerating = 0;
+                }
                 velocity += manForce;
             }
             foreach (var obody in sim.OrbitingBodies)
@@ -207,7 +214,7 @@ public class PathPrediction
                 Velocity = velocity,
                 MajorInfluence = majorInfluence,
                 Time = relTime,
-                Accelerating = accelerating,
+                TimeAccelerating = timeAccelerating,
                 IsCollision = colliding,
             };
             if (colliding)
@@ -234,7 +241,7 @@ public class PathPrediction
     public void RemoveManeuver()
     {
         maneuvers.RemoveAt(maneuvers.Count - 1);
-        
+
         var man = maneuvers.LastOrDefault();
         if (man == null)
         {

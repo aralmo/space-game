@@ -6,5 +6,5 @@ public record PredictedPoint
     public bool IsCollision;
     public bool IsJoin;
     public CelestialBody? MajorInfluence;
-    internal bool Accelerating;
+    internal float TimeAccelerating;
 }

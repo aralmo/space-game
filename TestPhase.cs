@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 public static class TestGamePhase
@@ -7,7 +8,7 @@ public static class TestGamePhase
     public static unsafe void Run()
     {
         InitWindow(1000, 1000, "sim");
-        SetTargetFPS(60);
+        SetTargetFPS(TARGET_FPS);
         var background = new Background();
         Shaders.Load();
         SetupGame();
@@ -74,7 +75,7 @@ public static class TestGamePhase
             Game.PlayerShip.DynamicSimulation.Position = currentShipPoint.Position;
             Game.PlayerShip.DynamicSimulation.Velocity = currentShipPoint.Velocity;
             Game.PlayerShip.DynamicSimulation.MajorInfluenceBody = currentShipPoint.MajorInfluence;
-            Game.PlayerShip.enginePlaying = currentShipPoint.Accelerating;
+            Game.PlayerShip.enginePlaying = currentShipPoint.TimeAccelerating > 0;
             Game.Simulation.Speed = 1;
         }
         else
@@ -118,7 +119,14 @@ public static class TestGamePhase
             else
             {
                 //if it's not an influence change node, draw the line
-                DrawLine((int)Math.Round(pA.X), (int)Math.Round(pA.Y), (int)Math.Round(pB.X), (int)Math.Round(pB.Y), predictionDisplay[i].Accelerating ? Color.Gold : Color.Beige);
+                var lineColor = predictionDisplay[i].TimeAccelerating switch
+                {
+                    float t when t > 8 => Color.Red,
+                    float t when t > 4 => Color.Yellow,
+                    float t when t > 0 => Color.Green,
+                    _ => Color.Beige,
+                };
+                DrawLine((int)Math.Round(pA.X), (int)Math.Round(pA.Y), (int)Math.Round(pB.X), (int)Math.Round(pB.Y), lineColor);
                 dtomouse = Vector2.Distance(pA, mpos);
                 if (dtomouse < distanceToMouse)
                 {
