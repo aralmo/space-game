@@ -61,8 +61,8 @@ public class OrbitingCamera : ICameraController
         // Update camera rotation
         if (IsMouseButtonDown(MouseButton.Right))
         {
-            cameraAngleX -= GetMouseDelta().X * (60f / Constants.TARGET_FPS) * .005f;
-            cameraAngleY += GetMouseDelta().Y * (60f / Constants.TARGET_FPS) * .005f;
+            cameraAngleX -= GetMouseDelta().X * (60f / Constants.TARGET_FPS) * .003f;
+            cameraAngleY += GetMouseDelta().Y * (60f / Constants.TARGET_FPS) * .003f;
             cameraAngleY = Math.Clamp(cameraAngleY, -MathF.PI / 2, MathF.PI / 2); // Limit vertical rotation
         }
 

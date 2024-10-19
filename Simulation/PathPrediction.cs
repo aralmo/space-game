@@ -99,6 +99,15 @@ public class PathPrediction
                 seconds: (int)Math.Min(60, remaining.TotalSeconds)));
         }
     }
+
+    Task predictionTask;
+    public void StartAsync()
+    {
+        predictionTask = Task.Run(()=>{
+
+        });
+    }
+
     static IEnumerable<PredictedPoint> Transfers(IEnumerable<PredictedPoint> points)
     {
         if (points == null || !points.Any()) yield break;
@@ -112,18 +121,24 @@ public class PathPrediction
             }
         }
     }
-    public void AddManeuver(DateTime time)
+    public void AddManeuver(Maneuver maneuver)
     {
         var last = maneuvers.LastOrDefault();
-        if (last != null && time <= last.Time) return;
-        var point = points.FirstOrDefault(p => p.Time == time);
+        if (last != null && maneuver.Time <= last.Time) return;
+        if (maneuver.Point == null)
+        {
+            maneuver.Point = points.FirstOrDefault(p => p.Time == maneuver.Time);
+        }
+        maneuvers.Add(maneuver);
+        UpdatePredictionForManeuver(maneuver);
+    }
+    public void AddManeuver(DateTime time)
+    {
         var m = new Maneuver()
         {
-            Point = point,
             Time = time
         };
-        maneuvers.Add(m);
-        UpdatePredictionForManeuver(m);
+        AddManeuver(m);
     }
     public void AddDeltaV(Vector3D deltaV)
     {
@@ -260,6 +275,7 @@ public class Maneuver
     public Vector3D DeltaV;
     public DateTime Time;
     internal PredictedPoint? Point;
+    public OrbitingObject? JoinTarget { get; internal set; }
 
     public Vector3D DVAtTime(DateTime time, float acceleration)
     {

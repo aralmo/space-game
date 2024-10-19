@@ -87,11 +87,12 @@ public static class TestGamePhase
     private static unsafe void DrawPredictedManeuver(PathPrediction shipPrediction)
     {
         var predictionDisplay = shipPrediction.Points.Where(p => p.Time >= Game.Simulation.Time).Decimate(400).ToArray();
-        var mpos = GetMousePosition();
+        var mouse_position = GetMousePosition();
         float distanceToMouse = float.MaxValue;
         PredictedPoint closest = default;
         Vector2 closestViewPos = default;
         float dtomouse;
+        bool mouse_control = true;
         //Draw the 2D line for the ship's current predicted path
         for (int i = 0; i < predictionDisplay.Length - 1; i++)
         {
@@ -103,7 +104,7 @@ public static class TestGamePhase
 
             if (predictionDisplay[i].MajorInfluence != predictionDisplay[i + 1].MajorInfluence)
             {
-                //this draws the dashed blue line that shows how a line drawn for a body influence
+                //this draws the dashed blue line that shows how a body influence
                 //relates to the path drawn on that body's current position.
                 float totalDistance = Vector2.Distance(pA, pB);
                 Vector2 direction = Vector2.Normalize(pB - pA);
@@ -127,7 +128,7 @@ public static class TestGamePhase
                     _ => Color.Beige,
                 };
                 DrawLine((int)Math.Round(pA.X), (int)Math.Round(pA.Y), (int)Math.Round(pB.X), (int)Math.Round(pB.Y), lineColor);
-                dtomouse = Vector2.Distance(pA, mpos);
+                dtomouse = Vector2.Distance(pA, mouse_position);
                 if (dtomouse < distanceToMouse)
                 {
                     distanceToMouse = dtomouse;
@@ -137,7 +138,7 @@ public static class TestGamePhase
             }
         }
         //draw the closest encounter points
-        foreach (var encounter in shipPrediction.ClosestEncounters)
+        foreach (var encounter in shipPrediction.ClosestEncounters.Where(e => e.obj is StationaryOrbitObject))
         {
             var inf = Game.PlayerShip.DynamicSimulation.MajorInfluenceBody;
             if (inf != null)
@@ -148,12 +149,35 @@ public static class TestGamePhase
             var p = encounter.obj.GetPosition(encounter.time, false) + (encounter.obj.CentralBody?.GetPosition(Game.Simulation.Time) ?? Vector3D.Zero);
             if (!p.IsBehindCamera(Camera.Current))
             {
-
                 var viewPos = GetWorldToScreen(p, Camera.Current);
-                //todo: improve what to show
                 if (encounter.distance < MIN_CAPTURE_DISTANCE)
                 {
                     Icons.Join.Draw(viewPos, Color.Green);
+                    if (Vector2.Distance(mouse_position, viewPos) < 20)
+                    {
+                        DrawCircleLines(viewPos.X.RoundInt(), viewPos.Y.RoundInt(), 20f, Color.Green);
+                        mouse_control = false; //prevent other mouse controls
+                        if (IsMouseButtonPressed(MouseButton.Left))
+                        {
+                            //place a 'match velocities with target' maneuver
+                            var point = shipPrediction.Points.First(p => p.Time == encounter.time);
+                            var relVelocity = encounter.obj.GetVelocity(encounter.time)-point.Velocity;
+                            var burn = relVelocity.Magnitude() / SHIP_ACCELERATION;
+                            var burnStart = encounter.time.AddSeconds(-burn);
+                            var burnPoint = shipPrediction.Points.LastOrDefault(p => p.Time <= burnStart);
+                            if (burnPoint != null)
+                            {
+                                shipPrediction.AddManeuver(new Maneuver()
+                                {
+                                    DeltaV = relVelocity,
+                                    Point = burnPoint,
+                                    Time = burnPoint.Time,
+                                    JoinTarget = encounter.obj
+                                });
+                                break;
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -172,7 +196,6 @@ public static class TestGamePhase
                     }
                 }
             }
-
         }
         //draw a collision icon if the last predicted node is crashing into a body
         var collisionNode = shipPrediction.Points.LastOrDefault(x => x.IsCollision);
@@ -193,7 +216,7 @@ public static class TestGamePhase
             DrawCircleLines((int)Math.Round(viewPos.X), (int)Math.Round(viewPos.Y), 6f, Color.Beige);
         }
         //draw the maneuver placement gizmo
-        if (distanceToMouse < 50)
+        if (mouse_control && distanceToMouse < 50)
         {
             DrawCircle((int)Math.Round(closestViewPos.X), (int)Math.Round(closestViewPos.Y), 6f, Color.Beige);
             if (IsMouseButtonPressed(MouseButton.Left))
