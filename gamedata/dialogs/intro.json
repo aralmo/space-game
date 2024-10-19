@@ -1,0 +1,74 @@
+[
+    {
+        "Type" : "camera",
+        "Who" : "player",
+        "Param" : "cinematic"
+    },
+    {
+        "Type": "floating",
+        "Text": "NC-Horizon Star,  Aeon-1 orbit"
+    },
+    {
+        "Type": "dialog",
+        "Side": 1,
+        "Who": "voss",
+        "Text": "My my captain...  Look at the beauty you've got us, New Colony surely knows how to build a ship."
+    },
+    {
+        "Type": "dialog",
+        "Side": 0,
+        "Who": "captain",
+        "Text": "Mr. Voss! I'm glad you arrived, I was worried you would put down my offer. Must say that new uniform also suits you better than our old Merchant Alliance rags."
+    },
+    {
+        "Type": "dialog",
+        "Side": 1,
+        "Who": "voss",
+        "Text": "Once a sailor always a sailor, Captain, and I'm too old to retire. This Horizon Star... This ship is something else. Where does a corporation from a far-away colony get all this advanced technology from?"
+    },
+    {
+        "Type": "dialog",
+        "Side": 0,
+        "Who": "captain",
+        "Text": "We have been traveling at light-speed for centuries in earth time, Voss. I guess that old ship we used to flight is now considered a relic, the kind that belongs in a museum."
+    },
+    {
+        "Type": "dialog",
+        "Side": 1,
+        "Who": "strauss",
+        "Text": "Indeed captain, four hundred and seventy two years have passed for earth since you left. That is remarkable, even for a Merchant Alliance ship."
+    },
+    {
+        "Type": "dialog",
+        "Side": 1,
+        "Who": "voss",
+        "Text": "The civilian crew is not ready yet, may I propose that we take this beauty out for a spin?"
+    },
+    {
+        "Type": "choices",
+        "Side": 0,
+        "Who": "captain",
+        "Choices": [
+            {
+                "Text": "I agree Mr. Voss (start tutorial)",
+                "Set" : "do_tutorial"
+            },
+            {
+                "Text": "Let's focus on embarking them as soon as possible."
+            }
+        ]
+    },
+    {
+        "Type": "dialog",
+        "If" : ["do_tutorial"],
+        "Side": 1,
+        "Who": "voss",
+        "Text": "ok, let's start the tutorial?"
+    },
+    {
+        "Type": "dialog",
+        "Side": 1,
+        "Who": "voss",
+        "Text": "We are done"
+    }
+]

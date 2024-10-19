@@ -1,0 +1,17 @@
+[
+    {
+        "Id" : "voss",
+        "Name": "Mr. Voss",
+        "Portrait": "old_captain"
+    },
+    {
+        "Id" : "captain",
+        "Name": "Captain",
+        "Portrait": "captain"
+    },
+    {
+        "Id" : "strauss",
+        "Name": "Dr. Strauss",
+        "Portrait": "scientist"
+    }
+]
