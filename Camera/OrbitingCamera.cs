@@ -68,7 +68,7 @@ public class OrbitingCamera : ICameraController
 
         // Update camera zoom
         cameraDistance -= GetMouseWheelMove() * 2.0f;
-        cameraDistance = MathF.Max(cameraDistance, 2.0f); // Prevent zooming too close
+        cameraDistance = MathF.Max(cameraDistance, .5f); // Prevent zooming too close
 
         // Update camera position based on angle and distance
         var targetPosition = isDynamicTarget ? TargetDynamic!.Position : TargetBody!.GetPosition(simulation?.Time ?? DateTime.UtcNow);

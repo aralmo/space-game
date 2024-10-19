@@ -10,6 +10,8 @@ public class StationaryOrbitObject : OrbitingObject
     {
     }
 
+    public Model? Model { get; private set; }
+
     /// <summary>
     /// Creates a stationary orbit object with a specified mass, orbiting around a celestial body.
     /// </summary>
@@ -17,10 +19,11 @@ public class StationaryOrbitObject : OrbitingObject
     /// <param name="parameters">The parameters defining the orbit.</param>
     /// <param name="mass">The mass of the orbiting object.</param>
     /// <returns>A new StationaryOrbitObject instance.</returns>
-    public static StationaryOrbitObject CreateStationary(OrbitingObject centralBody, OrbitParameters parameters)
+    public static StationaryOrbitObject CreateStationary(OrbitingObject centralBody, OrbitParameters parameters, string? model)
     {
         var stationary = new StationaryOrbitObject(time => parameters.PositionAtTime(time))
         {
+            Model = model != null ? ShipModels.Load(model) : null,
             OrbitParameters = parameters,
             CentralBody = centralBody,
             OrbitPoints = (parameters.Type == OrbitType.Elliptical)
@@ -34,6 +37,13 @@ public class StationaryOrbitObject : OrbitingObject
     public void Draw3D(DateTime? time)
     {
         var d = time.HasValue ? time.Value : Game.Simulation.Time;
-        DrawCube(GetPosition(d), 1, 2, 1, Color.Violet);
+        if (Model != null)
+        {
+            DrawModel(Model.Value, GetPosition(d),.6f,Color.White);
+        }
+        else
+        {
+            DrawCube(GetPosition(d), 1, 2, 1, Color.Violet);
+        }
     }
 }

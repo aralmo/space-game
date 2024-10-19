@@ -2,7 +2,7 @@ using System.IO.Compression;
 
 public class PathPrediction
 {
-    const float delta = 1f / TARGET_FPS;
+    const float delta = 1f / SIM_FPS;
     private readonly Simulation sim;
     private readonly DynamicSimulation dsim;
     List<PredictedPoint> points;
@@ -96,7 +96,7 @@ public class PathPrediction
                 position: position,
                 velocity: velocity,
                 relTime: startTime,
-                seconds: (int) Math.Min(40, remaining.TotalSeconds)));
+                seconds: (int) Math.Min(240, remaining.TotalSeconds)));
         }
     }
     static IEnumerable<PredictedPoint> Transfers(IEnumerable<PredictedPoint> points)
@@ -158,7 +158,7 @@ public class PathPrediction
 
     IEnumerable<PredictedPoint> YieldPredictions(Simulation sim, Vector3D position, Vector3D velocity, DateTime relTime, int seconds, Dictionary<OrbitingObject, (float distance, DateTime time)> closestFlybys)
     {
-        for (int i = 0; i < seconds * TARGET_FPS; i++)
+        for (int i = 0; i < seconds * SIM_FPS; i++)
         {
             CelestialBody? majorInfluence = default;
             float topInfluence = float.MinValue;

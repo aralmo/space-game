@@ -13,12 +13,14 @@ public class PlayerShip
     {
         Simulation = simulation;
         this.model = ShipModels.Load(model);
+        
         this.animations = ShipModels.LoadAnimations(model);
         var fc = animations[0].FrameCount;
         DynamicSimulation = dynamicSimulation;
+        dynamicSimulation.ModelSize = new Vector3(.2f,.2f,.2f);
         engineParticles = new EngineEmitter(
             dynamicSimulation,
-            particleSize: .08f,
+            particleSize: .017f,
             particleStartColor: new Color(41, 166, 207, 255),
             particleEndColor: Color.DarkBlue,
             maxParticles: 20,

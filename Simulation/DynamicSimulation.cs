@@ -19,6 +19,7 @@ public class DynamicSimulation
         var velocityVector = new Vector3((float)Velocity.X, (float)Velocity.Y, (float)Velocity.Z);
         return - Vector3.Cross(forward, velocityVector).Normalize();
     }
+    public Vector3 ModelSize{get;set;} = new Vector3(1, 1,1);
     public void Draw3D(Model model)
     {
         var v = Velocity - (MajorInfluenceBody != null ? MajorInfluenceBody.GetVelocity(simulation.Time) : Vector3D.Zero);
@@ -28,6 +29,6 @@ public class DynamicSimulation
         var rad = MathF.Acos(Vector3.Dot(forward.Normalize(), velocityVector.Normalize()));
         var degrees = rad * (180 / MathF.PI);
         Rotation = Quaternion.CreateFromAxisAngle(rotationAxis, rad);
-        DrawModelEx(model, Position, rotationAxis, degrees, new Vector3(1, 1, 1), Color.White);
+        DrawModelEx(model, Position, rotationAxis, degrees, ModelSize, Color.White);
     }
 }

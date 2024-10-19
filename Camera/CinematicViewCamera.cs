@@ -10,7 +10,7 @@ public class CinematicViewCamera : ICameraController
     public CinematicViewCamera(DynamicSimulation ship)
     {
 
-        float distance = 2f;
+        float distance = .5f;
         this.camera = new Camera3D()
         {
             Position = GetPosition(ship, distance, 0f),
@@ -37,10 +37,10 @@ public class CinematicViewCamera : ICameraController
             var rel_pos = (ship.Position - ship.MajorInfluenceBody.GetPosition(ship.simulation.Time)).Normalize() * distance;
             var up = ship.UpVector();
             var fwd = -Vector3.Cross(rel_pos, up).Normalize();
-            float sinComponent = (float)Math.Sin(t) * 0.5f; // Adjust the multiplier for smoothness
-            float cosComponent = (float)Math.Cos(t) * 0.5f; // Adjust the multiplier for smoothness
-            up *= 1.0f + sinComponent; // Apply the sin component to the up vector
-            fwd *= 1.0f + cosComponent; // Apply the cos component to the forward vector
+            float sinComponent = (float)Math.Sin(t) * 0.2f; // Adjust the multiplier for smoothness
+            float cosComponent = (float)Math.Cos(t) * 0.2f; // Adjust the multiplier for smoothness
+            up *= sinComponent; // Apply the sin component to the up vector
+            fwd *= cosComponent; // Apply the cos component to the forward vector
 
             if (up.Y > 0)
             {

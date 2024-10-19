@@ -13,7 +13,7 @@ public static class Test
             .WithModelVisuals(model: PlanetGenerator.GeneratePlanet(PlanetSettings.EarthLike, 1), size: 4f, Color.Blue)
             .WithInfo(name: "Aeon-2");
         
-        var station = StationaryOrbitObject.CreateStationary(planet, Solve.CircularOrbit(30,planet.Mass,simulation.Time.AddSeconds(-3)));
+        var station = StationaryOrbitObject.CreateStationary(planet, Solve.CircularOrbit(30,planet.Mass,simulation.Time.AddSeconds(-3)),"station");
             
         var planet2 = CelestialBody
             .CreateCelestial(centralBody: sun, radius: 1500f, mass: 600f,time: simulation.Time, eccentricity: 0.02f)

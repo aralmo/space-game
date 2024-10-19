@@ -44,9 +44,9 @@ public class EngineEmitter
 
     private void EmitParticle()
     {
-        var position = new Vector3(0,0,-.93f);
-        var velocity = new Vector3(0,0,-.02f);
-        var pv = velocity + new Vector3(Random.Shared.Next(-10, 10) * .00008f, Random.Shared.Next(-10, 10) * .00008f, Random.Shared.Next(-10, 10) * .00008f);
+        var position = new Vector3(0,0,-.19f);
+        var velocity = new Vector3(0,0,-.005f);
+        var pv = velocity + new Vector3(Random.Shared.Next(-10, 10) * .00003f, Random.Shared.Next(-10, 10) * .00003f, Random.Shared.Next(-10, 10) * .00003f);
         particles.Add(new Particle(position, particleSize, particleStartColor, pv));
     }
 
