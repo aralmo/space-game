@@ -2,6 +2,7 @@ public static class DrawUI
 {
     static Color BUTTON_COLOR = new Color(200, 200, 200, 255);
     static Color BUTTON_SELECTED_COLOR = new Color(100, 100, 100, 255);
+    static int? lastSpeed = null;
     public static void SimSpeedControls(int x, int y)
     {
         const int buttonWidth = 50;
@@ -21,6 +22,19 @@ public static class DrawUI
             }
             DrawText(label, currentX + (buttonWidth / 2) - (MeasureText(label, 20) / 2), y + (buttonHeight / 2) - 10, 20, Color.Black);
             currentX += buttonWidth + spacing;
+        }
+
+        if (IsKeyPressed(KeyboardKey.Space))
+        {
+            if (Game.Simulation.Speed == 0)
+            {
+                Game.Simulation.Speed = lastSpeed ?? 1;
+            }
+            else
+            {
+                lastSpeed = Game.Simulation.Speed;
+                Game.Simulation.Speed = 0;
+            }
         }
     }
     private static bool DrawButton(int x, int y, int width, int height, Color color)
