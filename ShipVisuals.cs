@@ -36,6 +36,6 @@ public static class ShipVisuals
 
     private static void ControlAnimations(Vessel ship)
     {
-        throw new NotImplementedException();
+        
     }
 }
