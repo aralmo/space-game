@@ -1,0 +1,26 @@
+{
+    "Name": "Pioneer Class",
+    "Maker": "New Horizons Corporation",
+    "Type": "Science and Exploration vessel",
+    "Description": "The Pioneer Class, a creation of the New Horizons Corporation, epitomizes the zenith of human creativity and the relentless pursuit of exploration. Granted full operational authority in remote colonies beyond the Sol systems, it is meticulously engineered for protracted voyages into the unknown depths of space. Its design incorporates all-encompassing amenities for sustained missions, featuring a well-equipped hangar with transport vessels and mining drones, on-board fabricators for essential goods, and spaciously comfortable living quarters for the crew.",
+    "Scale" : 0.2,
+    "Visuals": [
+        {
+            "Model": "ship1",
+            "Animations": [
+                {
+                    "Name": "hangar",
+                    "Frames" : 87
+                }
+            ]
+        },
+        {
+            "Effect": "engine",
+            "Position": {
+                "x": 0,
+                "y": 0,
+                "z": -0.9
+            }
+        }
+    ]
+}

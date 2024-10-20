@@ -1,24 +1,24 @@
-public class EngineEmitter
+public class EngineEmitter : Transform, I3DDrawable, IUpdatable
 {
     private List<Particle> particles;
-    private readonly DynamicSimulation simulation;
     private float particleSize;
     private readonly Color particleStartColor;
     private readonly Color particleEndColor;
     private int maxParticles;
     private float emitRate;
     private double lastEmitTime;
+    private Model model;
 
-    public EngineEmitter(DynamicSimulation simulation, float particleSize, Color particleStartColor, Color particleEndColor, int maxParticles, float emitRate)
+    public EngineEmitter(float particleSize = .085f, Color? particleStartColor = null, Color? particleEndColor = null, int maxParticles = 20, float emitRate = 0.002f)
     {
         this.particles = new List<Particle>();
-        this.simulation = simulation;
         this.particleSize = particleSize;
-        this.particleStartColor = particleStartColor;
-        this.particleEndColor = particleEndColor;
+        this.particleStartColor = particleStartColor ?? new Color(41, 166, 207, 255);
+        this.particleEndColor = particleEndColor ?? Color.DarkBlue;
         this.maxParticles = maxParticles;
         this.emitRate = emitRate;
         this.lastEmitTime = GetTime();
+        model = LoadModelFromMesh(GenMeshCube(1,1,1));
     }
 
     public void Clear()
@@ -44,20 +44,23 @@ public class EngineEmitter
 
     private void EmitParticle()
     {
-        var position = new Vector3(0,0,-.19f);
-        var velocity = new Vector3(0,0,-.005f);
-        var pv = velocity + new Vector3(Random.Shared.Next(-10, 10) * .00003f, Random.Shared.Next(-10, 10) * .00003f, Random.Shared.Next(-10, 10) * .00003f);
+        var position = Position;
+        var velocity = position.Normalize() * .02f * Scale;
+        var f = 0.00015f * Scale;
+        var pv = velocity + new Vector3(Random.Shared.Next(-10, 10) * f, Random.Shared.Next(-10, 10) * f, Random.Shared.Next(-10, 10) * f);
         particles.Add(new Particle(position, particleSize, particleStartColor, pv));
     }
 
     public void Draw3D()
     {
+        var matrix = GetWorldMatrix();
         foreach (var particle in particles)
         {
+            //todo: draw instanced!
             var p = particleSize * particle.Lifetime;
-            Color lerpedColor = particleStartColor.Lerp(particleEndColor, particle.Traveled / 2f);
-            
-            DrawCube(Vector3.Transform(particle.Position, simulation.Rotation) + simulation.Position, p, p, p, lerpedColor);
+            Color lerpedColor = particleStartColor.Lerp(particleEndColor, particle.Traveled / 2f);        
+            model.Transform = matrix;            
+            DrawModel(model,TransformPoint(particle.Position),p,lerpedColor);
         }
     }
 
