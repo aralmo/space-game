@@ -3,21 +3,35 @@ public static class ShipVisuals
 
     public static unsafe void Run()
     {
-        InitWindow(2000, 2000, "sim");
+        InitWindow(2000, 1000, "sim");
         SetTargetFPS(60);
-        var background = new Background();
         Shaders.Load();
-        SetupGame();
-        Camera.Orbit(Game.PlayerShip);
+        var ship = new Transform(scale: .2f)
+        {
+            RotationAxis = new Vector3(.5f,1f,0f)
+        };
+        // ship.Size = .2f;
+        ship.Model = ShipModels.Load("ship1");
 
+        var attachment = new Transform()
+        {
+            Parent = ship,
+            Position = new Vector3(.5f,0,0),
+            Model = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f)),
+            Scale = .1f
+        };
+
+        Camera.FreeOrbit();
         while (!WindowShouldClose())
         {
+            ship.Rotation += 0.001f;
             Camera.Update();
-            Game.PlayerShip.Update();
             BeginDrawing();
-            background.Draw2D();
+            ClearBackground(Color.Black);
             BeginMode3D(Camera.Current);
-            Game.PlayerShip.Draw3D();
+            Draw3DGrid(gridSize: 10, .05f, color: new Color(120, 120, 120, 120));
+            ship.Draw3D();
+            attachment.Draw3D();
             EndMode3D();
             DialogController.Draw2D();
             EndDrawing();
@@ -26,20 +40,5 @@ public static class ShipVisuals
         Shaders.Unload();
         ShipModels.Unload();
         CloseWindow();
-    }
-
-      static void SetupGame()
-    {
-        var simulation = Test.DefaultSimulation();
-        var startVectors = ShipStartingVectors(simulation);
-        var ds = new DynamicSimulation(simulation, startVectors.pos, startVectors.vel);
-        Game.Simulation = simulation;
-        Game.PlayerShip = new PlayerShip(simulation, ds, "ship1");
-    }
-    static (Vector3D pos, Vector3D vel) ShipStartingVectors(Simulation sim)
-    {
-        var planet = sim.OrbitingBodies.Skip(1).First();
-        var orbit = OrbitingObject.Create(planet, 20f, 1f, sim.Time);
-        return (orbit.GetPosition(sim.Time), orbit.GetVelocity(sim.Time));
     }
 }

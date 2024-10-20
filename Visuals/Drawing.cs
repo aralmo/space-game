@@ -11,9 +11,9 @@ public static class Drawing
         }
     }
 
-    public static void Draw3DGrid(int gridSize = 10, float gridSpacing = .5f, Vector3D position = default)
+    public static void Draw3DGrid(int gridSize = 10, float gridSpacing = .5f, Vector3D position = default, Color? color = null)
     {
-        var gridColor = Color.Gray;
+        var gridColor = color ?? Color.Gray;
         for (int i = -gridSize; i <= gridSize; i++)
         {
             DrawLine3D(new Vector3(i * gridSpacing, 0, -gridSize * gridSpacing), new Vector3(i * gridSpacing, 0, gridSize * gridSpacing), gridColor);

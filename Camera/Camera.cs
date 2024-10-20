@@ -1,3 +1,4 @@
+
 public static class Camera
 {
     public static Camera3D Current => current.Camera;
@@ -13,6 +14,11 @@ public static class Camera
     public static void Update()
     {
         current?.Update();
+    }
+
+    internal static void FreeOrbit()
+    {
+        current = new FreeOrbitingCamera(Vector3D.Zero);
     }
 }
 interface ICameraController

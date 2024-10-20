@@ -14,8 +14,8 @@ public static class DrawUI
         for (int i = 0; i < buttonLabels.Length; i++)
         {
             string? label = buttonLabels[i];
-            if (DrawButton(currentX, y, buttonWidth, buttonHeight,color:
-                speed[i] == Game.Simulation.Speed 
+            if (DrawButton(currentX, y, buttonWidth, buttonHeight, color:
+                speed[i] == Game.Simulation.Speed
                 ? BUTTON_SELECTED_COLOR : BUTTON_COLOR))
             {
                 Game.Simulation.Speed = speed[i];

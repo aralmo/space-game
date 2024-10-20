@@ -29,6 +29,7 @@ public class DynamicSimulation
         var rad = MathF.Acos(Vector3.Dot(forward.Normalize(), velocityVector.Normalize()));
         var degrees = rad * (180 / MathF.PI);
         Rotation = Quaternion.CreateFromAxisAngle(rotationAxis, rad);
+        
         DrawModelEx(model, Position, rotationAxis, degrees, ModelSize, Color.White);
     }
 }
