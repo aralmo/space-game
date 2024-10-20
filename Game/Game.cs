@@ -1,5 +1,10 @@
 using MissionTypes;
 
+/// <summary>
+/// Game state context
+/// </summary> <summary>
+/// 
+/// </summary>
 public static class Game
 {
     public static IMission? CurrentMission { get; set; }

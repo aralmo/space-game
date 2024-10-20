@@ -1,13 +1,13 @@
-public class Transform
+public class Object3D
 {
     public Vector3 Position { get; set; }
     public float Scale { get; set; } = 1.0f;
     public float Rotation { get; set; }
     public Vector3 RotationAxis { get; set; } = new Vector3(0, 1, 0);
     public Model Model;
-    public Transform? Parent { get; set; }
+    public Object3D? Parent { get; set; }
 
-    public Transform(Vector3 position = default, Vector3 rotationAxis = default, float rotationAngle = 0, float scale = 1.0f, Model? model = null, Transform? parent = null)
+    public Object3D(Vector3 position = default, Vector3 rotationAxis = default, float rotationAngle = 0, float scale = 1.0f, Model? model = null, Object3D? parent = null)
     {
         Position = position == default ? new Vector3(0, 0, 0) : position;
         RotationAxis = rotationAxis == default ? new Vector3(0, 1, 0) : rotationAxis;

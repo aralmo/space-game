@@ -6,14 +6,14 @@ public static class ShipVisuals
         InitWindow(2000, 1000, "sim");
         SetTargetFPS(60);
         Shaders.Load();
-        var ship = new Transform(scale: .2f)
+        var ship = new Object3D(scale: .2f)
         {
             RotationAxis = new Vector3(.5f,1f,0f)
         };
         // ship.Size = .2f;
         ship.Model = ShipModels.Load("ship1");
 
-        var attachment = new Transform()
+        var attachment = new Object3D()
         {
             Parent = ship,
             Position = new Vector3(.5f,0,0),
