@@ -36,8 +36,8 @@ public class FreeOrbitingCamera : ICameraController
         }
 
         // Update camera zoom
-        cameraDistance -= GetMouseWheelMove() * 2.0f;
-        cameraDistance = MathF.Max(cameraDistance, .5f); // Prevent zooming too close
+        cameraDistance -= GetMouseWheelMove() * 0.15f;
+        cameraDistance = MathF.Max(cameraDistance, .1f); // Prevent zooming too close
 
         // Update camera position based on angle and distance
         camera.Position.X = (float)(targetPosition.X + Math.Sin(cameraAngleX) * Math.Cos(cameraAngleY) * cameraDistance);

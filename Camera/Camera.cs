@@ -16,9 +16,9 @@ public static class Camera
         current?.Update();
     }
 
-    internal static void FreeOrbit()
+    internal static void FreeOrbit(Vector3? lookAt = null)
     {
-        current = new FreeOrbitingCamera(Vector3D.Zero);
+        current = new FreeOrbitingCamera(lookAt ?? Vector3D.Zero);
     }
 }
 interface ICameraController

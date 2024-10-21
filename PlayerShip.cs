@@ -22,13 +22,7 @@ public class PlayerShip
         var fc = animations[0].FrameCount;
         DynamicSimulation = dynamicSimulation;
         dynamicSimulation.ModelSize = new Vector3(.2f, .2f, .2f);
-        engineParticles = new EngineEmitter(
-            dynamicSimulation,
-            particleSize: .017f,
-            particleStartColor: new Color(41, 166, 207, 255),
-            particleEndColor: Color.DarkBlue,
-            maxParticles: 20,
-            emitRate: 0.002f);
+        engineParticles = new EngineEmitter();
         Prediction = new PathPrediction(simulation, dynamicSimulation);
         Prediction.StartAsync();
     }

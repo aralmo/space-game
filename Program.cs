@@ -7,8 +7,10 @@ internal class Program
 {
     private static unsafe void Main(string[] args)
     {
-        VNext.Run();
+        // VNext.Run();
         //ShipVisuals.Run();
+        // VNext.Run();
+        ShipVisuals.Run("gamedata/ships/pioneer.json");
         // TestGamePhase.Run();
     }
 }
