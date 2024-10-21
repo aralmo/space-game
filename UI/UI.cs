@@ -37,6 +37,29 @@ public static class DrawUI
             }
         }
     }
+
+    public static bool DrawButton(int x, int y, int width, int height, Color buttonColor, Color textColor, string text)
+    {
+        // Draw shadow
+        DrawRectangle(x + 1, y + 1, width, height, Color.DarkGray);
+        bool isClicked = false;
+        if (IsMouseOver(x, y, width, height))
+        {
+            DrawRectangle(x, y, width, height, new Color((int)buttonColor.R, buttonColor.G, buttonColor.B, 100));
+            if (IsMouseButtonPressed(MouseButton.Left))
+            {
+                isClicked = true;
+            }
+        }
+        else
+        {
+            DrawRectangle(x, y, width, height, buttonColor);
+        }
+        DrawText(text, x + (width / 2) - (MeasureText(text, 20) / 2), y + (height / 2) - 10, 20, textColor);
+        return isClicked;
+    }
+
+    
     private static bool DrawButton(int x, int y, int width, int height, Color color)
     {
         // Draw shadow

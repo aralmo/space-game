@@ -29,6 +29,17 @@ public class Transform
     }
     public Vector3 TransformPoint(Vector3 point)
     {
+            var p = point;
+            var m = Matrix4x4.CreateFromAxisAngle(RotationAxis, -Rotation);
+            p = Vector3.Transform(p, m) * Scale;
+            if (Parent != null)
+            {
+                p = Parent.TransformPoint(p);
+            }       
+            return p;     
+    }
+    protected Vector3 TransformPointByParent(Vector3 point)
+    {
         var p = point;
         if (Parent != null)
         {

@@ -60,7 +60,7 @@ public class EngineEmitter : Transform, I3DDrawable, IUpdatable
             var p = particleSize * particle.Lifetime;
             Color lerpedColor = particleStartColor.Lerp(particleEndColor, particle.Traveled / 2f);        
             model.Transform = matrix;            
-            DrawModel(model,TransformPoint(particle.Position),p,lerpedColor);
+            DrawModel(model,TransformPointByParent(particle.Position),p,lerpedColor);
         }
     }
 

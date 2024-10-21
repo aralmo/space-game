@@ -4,27 +4,32 @@ public class Vessel : Transform
 {
     public string[] Animations { get; set; }
     Transform[] transforms;
+    public HangarModel[] hangars;
     private Vessel() { }
     public static Vessel LoadFromFile(string file)
     {
         List<Transform> transforms = new();
+        List<string> animations = new();
         var options = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IncludeFields = true };
         var data = JsonSerializer.Deserialize<ShipDataModel>(File.ReadAllText(file), options);
         var vessel = new Vessel();
+
         foreach (var v in data.Visuals)
         {
             if (!string.IsNullOrEmpty(v.Model))
             {
                 ShipAnimation[] anims = Array.Empty<ShipAnimation>();
-                if (v.Animations.Any())
+                if (v.Animations != null && v.Animations.Any())
                 {
                     anims = LoadAnimations(v).ToArray();
+                    animations.AddRange(anims.Select(a => a.Name));
                 }
                 transforms.Add(new ModelTransform()
                 {
                     Model = ShipModels.Load(v.Model),
                     Position = v.Position,
                     Parent = vessel,
+                    Scale = v.Scale,
                     Animations = anims
                 });
                 continue;
@@ -36,6 +41,7 @@ public class Vessel : Transform
                     case "engine":
                         transforms.Add(new EngineEmitter()
                         {
+                            Scale = v.Scale,
                             Position = v.Position,
                             Parent = vessel
                         }); break;
@@ -43,6 +49,8 @@ public class Vessel : Transform
             }
         }
 
+        vessel.hangars = data.Hangars;
+        vessel.Animations = animations.ToArray();
         vessel.Scale = data.Scale;
         vessel.transforms = transforms.ToArray();
         return vessel;
@@ -58,8 +66,7 @@ public class Vessel : Transform
                 {
                     Frames = v.Animations[i].Frames,
                     ModelAnimation = a[i],
-                    Name = v.Animations[i].Name,
-                    Playing = true
+                    Name = v.Animations[i].Name
                 };
             }
         }
@@ -98,9 +105,11 @@ public class Vessel : Transform
         public string Description { get; set; }
         public float Scale { get; set; }
         public VisualModel[] Visuals { get; set; }
+        public HangarModel[] Hangars {get;set;}
     }
     private class VisualModel
     {
+        public float Scale {get;set;} = 1F;
         public Vector3 Position { get; set; }
         public string Model { get; set; }
         public AnimationModel[] Animations { get; set; }
@@ -111,5 +120,10 @@ public class Vessel : Transform
         public string Name { get; set; }
         public string Type { get; set; }
         public int Frames { get; set; }
+    }
+    public class HangarModel
+    {
+        public string Animation {get;set;}
+        public Vector3[] Route {get;set;}
     }
 }

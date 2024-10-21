@@ -10,7 +10,7 @@ public class ModelTransform : Transform, I3DDrawable, IUpdatable
     public void Draw3D()
     {
         var modelMatrix = GetWorldMatrix();
-        var p = TransformPoint(Position);
+        var p = TransformPointByParent(Position);
         Model.Transform = modelMatrix;
         DrawModel(Model, p, 1.0f, Color.White);
     }

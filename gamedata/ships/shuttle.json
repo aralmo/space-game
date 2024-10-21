@@ -1,0 +1,21 @@
+{
+    "Name": "Shuttle-A",
+    "Maker": "New Horizons Corporation",
+    "Type": "Shuttle",
+    "Description": "A basic and proven shuttle design built by almost all of the major corporations. While it's basic design has been almost untouched for the last 2 centuries many variants exist.",
+    "Scale": 0.005,
+    "Visuals": [
+        {
+            "Model": "shuttle-a"
+        },
+        {
+            "Effect": "engine",
+            "Scale" : 3,
+            "Position": {
+                "x": 0,
+                "y": -0.01,
+                "z": -1.2                
+            }
+        }
+    ]
+}
