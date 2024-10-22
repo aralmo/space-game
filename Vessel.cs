@@ -43,7 +43,8 @@ public class Vessel : Transform
                         {
                             Scale = v.Scale,
                             Position = v.Position,
-                            Parent = vessel
+                            Parent = vessel,
+                            Direction = v.Direction??v.Position.Normalize()
                         }); break;
                 }
             }
@@ -114,6 +115,7 @@ public class Vessel : Transform
         public string Model { get; set; }
         public AnimationModel[] Animations { get; set; }
         public string Effect { get; set; }
+        public Vector3? Direction{get;set;}
     }
     private class AnimationModel
     {

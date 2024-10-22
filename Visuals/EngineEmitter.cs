@@ -7,6 +7,7 @@ public class EngineEmitter : Transform, I3DDrawable, IUpdatable
     private int maxParticles;
     private float emitRate;
     private double lastEmitTime;
+    public Vector3 Direction = Vector3.Zero;
     private Model model;
 
     public EngineEmitter(float particleSize = .085f, Color? particleStartColor = null, Color? particleEndColor = null, int maxParticles = 20, float emitRate = 0.002f)
@@ -18,6 +19,7 @@ public class EngineEmitter : Transform, I3DDrawable, IUpdatable
         this.maxParticles = maxParticles;
         this.emitRate = emitRate;
         this.lastEmitTime = GetTime();
+        Direction = Position.Normalize();
         model = LoadModelFromMesh(GenMeshCube(1,1,1));
     }
 
@@ -45,7 +47,7 @@ public class EngineEmitter : Transform, I3DDrawable, IUpdatable
     private void EmitParticle()
     {
         var position = Position;
-        var velocity = position.Normalize() * .02f * Scale;
+        var velocity = Direction * .02f * Scale;
         var f = 0.00015f * Scale;
         var pv = velocity + new Vector3(Random.Shared.Next(-10, 10) * f, Random.Shared.Next(-10, 10) * f, Random.Shared.Next(-10, 10) * f);
         particles.Add(new Particle(position, particleSize, particleStartColor, pv));

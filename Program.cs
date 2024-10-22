@@ -10,7 +10,7 @@ internal class Program
         // VNext.Run();
         //ShipVisuals.Run();
         // VNext.Run();
-        ShipVisuals.Run("gamedata/ships/pioneer.json");
+        ShipVisuals.Run();
         // TestGamePhase.Run();
     }
 }

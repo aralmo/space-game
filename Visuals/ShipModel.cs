@@ -3,7 +3,8 @@ public static class ShipModels
     static List<Model> loaded = new List<Model>();
     public unsafe static Model Load(string name)
     {
-        var pmodel = LoadModel($"gamedata/ships/models/{name}.m3d");
+        var file = $"gamedata/ships/models/{name}.m3d";
+        var pmodel = LoadModel(file);
         var model = FixVoxelModelNormals(ref pmodel);
 
         UnloadModel(pmodel);
@@ -17,8 +18,10 @@ public static class ShipModels
     }
     public unsafe static ModelAnimation[] LoadAnimations(string name)
     {
+        var file = $"gamedata/ships/models/{name}.m3d";
+        if (!File.Exists(file)) return Array.Empty<ModelAnimation>();
         int animsCount = 0;
-        var anims = LoadModelAnimations($"gamedata/ships/models/{name}.m3d", ref animsCount);
+        var anims = LoadModelAnimations(file, ref animsCount);
         var arr = new ModelAnimation[animsCount];
         for (int i = 0; i < animsCount; i++)
         {

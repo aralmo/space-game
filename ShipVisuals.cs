@@ -1,8 +1,12 @@
 public static class ShipVisuals
 {
 
-    public static unsafe void Run(string shipFile)
+    public static unsafe void Run()
     {
+        string[] ships  = ["pioneer", "warship", "shuttle"];
+        var current = 0;
+        string shipFile = $"gamedata/ships/{ships[current]}.json";
+
         InitWindow(1000, 1000, "sim");
         SetTargetFPS(60);
         Shaders.Load();
@@ -24,6 +28,27 @@ public static class ShipVisuals
             EndMode3D();
             DialogController.Draw2D();
             ControlAnimations(ship);
+            int screenWidth = GetScreenWidth();
+            int buttonWidth = 50;
+            int buttonHeight = 30;
+            int posXLeftButton = screenWidth / 2 - buttonWidth - 10; // Position for "<" button
+            int posY = 10; // Top margin
+            int posXRightButton = screenWidth / 2 + 10; // Position for ">" button
+
+            if (DrawUI.DrawButton(posXLeftButton, posY, buttonWidth, buttonHeight, Color.LightGray, Color.Black, "<"))
+            {
+                current = (current - 1 + ships.Length) % ships.Length;
+                shipFile = $"gamedata/ships/{ships[current]}.json";
+                ship = Vessel.LoadFromFile(shipFile);
+            }
+
+            if (DrawUI.DrawButton(posXRightButton, posY, buttonWidth, buttonHeight, Color.LightGray, Color.Black, ">"))
+            {
+                current = (current + 1) % ships.Length;
+                shipFile = $"gamedata/ships/{ships[current]}.json";
+                ship = Vessel.LoadFromFile(shipFile);
+            }
+
             EndDrawing();
             var f2 = new FileInfo(shipFile);
             if (f2.LastWriteTimeUtc > fi.LastWriteTimeUtc && (DateTime.UtcNow - f2.LastWriteTimeUtc).TotalSeconds > .2)
