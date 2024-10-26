@@ -45,7 +45,7 @@ public class ShipModel : Transform
                             Scale = v.Scale,
                             Position = v.Position,
                             Parent = vessel,
-                            Direction = v.Direction??v.Position.Normalize()
+                            Direction = v.Direction ?? v.Position.Normalize()
                         }); break;
                 }
             }
@@ -106,16 +106,16 @@ public class ShipModel : Transform
         public string Description { get; set; }
         public float Scale { get; set; }
         public VisualModel[] Visuals { get; set; }
-        public HangarModel[] Hangars {get;set;}
+        public HangarModel[] Hangars { get; set; }
     }
     private class VisualModel
     {
-        public float Scale {get;set;} = 1F;
+        public float Scale { get; set; } = 1F;
         public Vector3 Position { get; set; }
         public string Model { get; set; }
         public AnimationModel[] Animations { get; set; }
         public string Effect { get; set; }
-        public Vector3? Direction{get;set;}
+        public Vector3? Direction { get; set; }
     }
     private class AnimationModel
     {
@@ -125,7 +125,7 @@ public class ShipModel : Transform
     }
     public class HangarModel
     {
-        public string Animation {get;set;}
-        public Vector3[] Route {get;set;}
+        public string Animation { get; set; }
+        public Vector3[] Route { get; set; }
     }
 }

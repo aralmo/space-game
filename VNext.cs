@@ -42,7 +42,11 @@ public static class VNext
             {
                 ship.Update();
             }
-
+            if (IsKeyPressed(KeyboardKey.Tab))
+            {
+                Game.NextShip();
+                Camera.Orbit(Game.SelectedShip.Model);
+            }
             view.Update();
 
             //pre-3d 2d drawing
@@ -80,7 +84,9 @@ public static class VNext
         var simulation = Test.DefaultSimulation();
         Game.Simulation = simulation;
         var startVectors = ShipStartingVectors(simulation);
+        var startVectors2 = Ship2StartingVectors(simulation);
         var ds = new DynamicSimulation(startVectors.pos, startVectors.vel);
+        var ds2 = new DynamicSimulation(startVectors2.pos, startVectors2.vel);
         Game.Spaceships.Add(new Spaceship()
         {
             Simulation = ds,
@@ -88,6 +94,19 @@ public static class VNext
             Owner = 0,
             Prediction = new PathPrediction(Game.Simulation, ds)
         });
+        Game.Spaceships.Add(new Spaceship()
+        {
+            Simulation = ds2,
+            Model = ShipModel.Load("warship"),
+            Owner = 0,
+            Prediction = new PathPrediction(Game.Simulation, ds2)
+        });
+    }
+    static (Vector3D pos, Vector3D vel) Ship2StartingVectors(Simulation sim)
+    {
+        var planet = sim.OrbitingBodies.Skip(1).First();
+        var orbit = OrbitingObject.Create(planet, 25f, 1f, sim.Time);
+        return (orbit.GetPosition(sim.Time), orbit.GetVelocity(sim.Time));
     }
     static (Vector3D pos, Vector3D vel) ShipStartingVectors(Simulation sim)
     {

@@ -5,14 +5,14 @@ public class CinematicViewCamera : ICameraController
     public Camera3D Camera => camera;
     Camera3D camera;
     float t = 0f;
-    public CinematicViewCamera(PlayerShip ship)
+    public CinematicViewCamera(Spaceship ship)
     {
-        var influence = (OrbitingObject) ship.Stationed ?? ship.DynamicSimulation.MajorInfluenceBody;
+        var influence = ship.Simulation.MajorInfluenceBody;
         float distance = .5f;
         this.camera = new Camera3D()
         {
-            Position = GetPosition(influence,ship.DynamicSimulation, distance, 0f),
-            Target = ship.DynamicSimulation.Position,
+            Position = GetPosition(influence,ship.Simulation, distance, 0f),
+            Target = ship.Simulation.Position,
             Up = new Vector3(0.0f, 1.0f, 0.0f),
             FovY = 60.0f,
             Projection = CameraProjection.Perspective
@@ -20,9 +20,9 @@ public class CinematicViewCamera : ICameraController
         update = () =>
         {
             t += 0.0005f;
-            Vector3 pos = GetPosition(influence,ship.DynamicSimulation, distance, t);
+            Vector3 pos = GetPosition(influence,ship.Simulation, distance, t);
             this.camera.Position = pos;
-            this.camera.Target = ship.DynamicSimulation.Position;
+            this.camera.Target = ship.Simulation.Position;
         };
         update();
     }

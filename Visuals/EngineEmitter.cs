@@ -29,6 +29,7 @@ public class EngineEmitter : Transform, I3DDrawable, IUpdatable
     }
     public void Update()
     {
+        if (!Enabled) return;
         double currentTime = GetTime();
         if (currentTime - lastEmitTime >= emitRate && particles.Count < maxParticles)
         {
@@ -55,6 +56,7 @@ public class EngineEmitter : Transform, I3DDrawable, IUpdatable
 
     public void Draw3D()
     {
+        if (!Enabled) return;
         var matrix = GetWorldMatrix();
         foreach (var particle in particles)
         {

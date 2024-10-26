@@ -9,6 +9,7 @@ public class ModelTransform : Transform, I3DDrawable, IUpdatable
 
     public void Draw3D()
     {
+        if (!Enabled) return;
         var modelMatrix = GetWorldMatrix();
         var p = TransformPointByParent(Position);
         Model.Transform = modelMatrix;
@@ -17,6 +18,7 @@ public class ModelTransform : Transform, I3DDrawable, IUpdatable
 
     public void Update()
     {
+        if (!Enabled) return;
         foreach (ShipAnimation animation in Animations)
         {
             if (animation.Playing && animation.CurrentFrame < animation.Frames)

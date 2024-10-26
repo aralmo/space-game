@@ -1,5 +1,6 @@
 public class Transform
 {
+    public bool Enabled = true;
     public Vector3 Position { get; set; }
     public float Scale { get; set; } = 1.0f;
     public float Rotation { get; set; }

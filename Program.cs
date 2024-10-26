@@ -7,6 +7,7 @@ internal class Program
 {
         private static unsafe void Main(string[] args)
         {
+                // ShipDisplay.Run();
                 VNext.Run();
         }
 }

@@ -9,8 +9,10 @@ public static class Game
 {
     public static IMission? CurrentMission { get; set; }
     public static Simulation Simulation { get; set; }
-    public static List<Spaceship> Spaceships{get;} = new List<Spaceship>();
-    public static Spaceship SelectedShip => Spaceships.FirstOrDefault();
+    public static List<Spaceship> Spaceships { get; } = new List<Spaceship>();
+    static int selected = 0;
+    public static Spaceship SelectedShip => Spaceships[selected];
+    public static void NextShip() => selected = (selected +1) % Spaceships.Count;
     static HashSet<string> flags = new();
     public static void SetFlag(string flag)
     {
