@@ -17,8 +17,8 @@ public class PlayerShip
     public unsafe PlayerShip(Simulation simulation, DynamicSimulation dynamicSimulation, string model)
     {
         Simulation = simulation;
-        this.model = ShipModels.Load(model);
-        this.animations = ShipModels.LoadAnimations(model);
+        this.model = Ship3DModels.Load(model);
+        this.animations = Ship3DModels.LoadAnimations(model);
         var fc = animations[0].FrameCount;
         DynamicSimulation = dynamicSimulation;
         dynamicSimulation.ModelSize = new Vector3(.2f, .2f, .2f);

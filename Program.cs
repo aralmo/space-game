@@ -5,12 +5,8 @@ global using static Drawing;
 global using static Constants;
 internal class Program
 {
-    private static unsafe void Main(string[] args)
-    {
-        // VNext.Run();
-        //ShipVisuals.Run();
-        // VNext.Run();
-        ShipVisuals.Run();
-        // TestGamePhase.Run();
-    }
+        private static unsafe void Main(string[] args)
+        {
+                VNext.Run();
+        }
 }

@@ -16,30 +16,33 @@ public class PlayTurnView : GameView
     public override void Update()
     {
         base.Update();
-        UpdateShipPosition();
+        UpdateShipsPositions();
     }
-    private static unsafe void UpdateShipPosition()
+    private static unsafe void UpdateShipsPositions()
     {
-        if (Game.PlayerShip?.Prediction == null) return;
-        var shipPrediction = Game.PlayerShip.Prediction;
-        PredictedPoint? currentShipPoint = shipPrediction.Points.FirstOrDefault(t => t.Time >= Game.Simulation.Time);
-        if (currentShipPoint != null)
+        foreach (var ship in Game.Spaceships)
         {
-            Game.PlayerShip.DynamicSimulation.Position = currentShipPoint.Position;
-            Game.PlayerShip.DynamicSimulation.Velocity = currentShipPoint.Velocity;
-            Game.PlayerShip.DynamicSimulation.MajorInfluenceBody = currentShipPoint.MajorInfluence;
-            Game.PlayerShip.EnginePlaying = currentShipPoint.TimeAccelerating > 0;
-        }
-        else
-        {
-            var lastPoint = Game.PlayerShip?.Prediction?.Points?.LastOrDefault();
-            if (lastPoint?.IsJoin ?? false)
+            if (ship.Prediction == null) return;
+            var shipPrediction = ship.Prediction;
+            PredictedPoint? currentShipPoint = shipPrediction.Points.FirstOrDefault(t => t.Time >= Game.Simulation.Time);
+            if (currentShipPoint != null)
             {
-                Game.PlayerShip.Stationed = lastPoint.JoinObject!;
+                ship.Simulation.Position = currentShipPoint.Position;
+                ship.Simulation.Velocity = currentShipPoint.Velocity;
+                ship.Simulation.MajorInfluenceBody = currentShipPoint.MajorInfluence;
+                //ship.EnginePlaying = currentShipPoint.TimeAccelerating > 0;
             }
+            else
+            {
+                var lastPoint = ship.Prediction?.Points?.LastOrDefault();
+                if (lastPoint?.IsJoin ?? false)
+                {
+                    //Game.PlayerShip.Stationed = lastPoint.JoinObject!;
+                }
 
-            Game.Simulation.Speed = 0;
-            shipPrediction.Reset();
+                Game.Simulation.Speed = 0;
+                shipPrediction.Reset();
+            }
         }
     }
 

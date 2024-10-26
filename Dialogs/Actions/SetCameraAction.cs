@@ -18,10 +18,10 @@ public class SetCameraAction : ScriptAction
             switch (camera)
             {
                 case "orbit":
-                    Camera.Orbit(Game.PlayerShip);
+                    Camera.Orbit(Game.SelectedShip.Model);
                     break;
                 case "cinematic":
-                    Camera.CinematicView(Game.PlayerShip);
+                    Camera.CinematicView(Game.SelectedShip.Model);
                     break;
             }
         }

@@ -62,7 +62,7 @@ public static class TestGamePhase
         }
         Icons.Unload();
         Shaders.Unload();
-        ShipModels.Unload();
+        Ship3DModels.Unload();
         //unload simualtion models when it's separated.
         CloseWindow();
     }

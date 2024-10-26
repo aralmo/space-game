@@ -32,6 +32,7 @@ vec4 norm(vec3 normals)
 }
 void main()
 {
+    
     // Send vertex attributes to fragment shader
     fragColor = vertexColor * norm(vertexNormal);
     // Calculate final vertex position

@@ -27,12 +27,12 @@ public class Tutorial : IMission
     {
         //check first objective
         var moon = Game.Simulation.OrbitingBodies.FirstOrDefault(b => (b is CelestialBody body) && body.Name == "Aeon-1A");
-        if (Game.PlayerShip.DynamicSimulation.MajorInfluenceBody != null
-            && Game.PlayerShip.DynamicSimulation.MajorInfluenceBody == moon && !hasOrbitedMoon)
+        if (Game.SelectedShip.Simulation.MajorInfluenceBody != null
+            && Game.SelectedShip.Simulation.MajorInfluenceBody == moon && !hasOrbitedMoon)
         {
-            var pos = Game.PlayerShip.DynamicSimulation.Position - Game.PlayerShip.DynamicSimulation.MajorInfluenceBody.GetPosition(Game.Simulation.Time);
-            var vel = Game.PlayerShip.DynamicSimulation.Velocity - Game.PlayerShip.DynamicSimulation.MajorInfluenceBody.GetVelocity(Game.Simulation.Time);
-            var orbit = Solve.KeplarOrbit(pos, vel, Game.PlayerShip.DynamicSimulation.MajorInfluenceBody.Mass, Game.Simulation.Time);
+            var pos = Game.SelectedShip.Simulation.Position - Game.SelectedShip.Simulation.MajorInfluenceBody.GetPosition(Game.Simulation.Time);
+            var vel = Game.SelectedShip.Simulation.Velocity - Game.SelectedShip.Simulation.MajorInfluenceBody.GetVelocity(Game.Simulation.Time);
+            var orbit = Solve.KeplarOrbit(pos, vel, Game.SelectedShip.Simulation.MajorInfluenceBody.Mass, Game.Simulation.Time);
             if (orbit.Type == OrbitType.Elliptical && orbit.Eccentricity < .2f)
             {
                 hasOrbitedMoon = true;
@@ -40,12 +40,12 @@ public class Tutorial : IMission
         }
 
         //check second objective
-        var second = Game.PlayerShip.DynamicSimulation.MajorInfluenceBody == moon.CentralBody;
+        var second = Game.SelectedShip.Simulation.MajorInfluenceBody == moon.CentralBody;
         if (second && !inPlanetOrbit && hasOrbitedMoon)
         {
-            var pos = Game.PlayerShip.DynamicSimulation.Position - Game.PlayerShip.DynamicSimulation.MajorInfluenceBody.GetPosition(Game.Simulation.Time);
-            var vel = Game.PlayerShip.DynamicSimulation.Velocity - Game.PlayerShip.DynamicSimulation.MajorInfluenceBody.GetVelocity(Game.Simulation.Time);
-            var orbit = Solve.KeplarOrbit(pos, vel, Game.PlayerShip.DynamicSimulation.MajorInfluenceBody.Mass, Game.Simulation.Time);
+            var pos = Game.SelectedShip.Simulation.Position - Game.SelectedShip.Simulation.MajorInfluenceBody.GetPosition(Game.Simulation.Time);
+            var vel = Game.SelectedShip.Simulation.Velocity - Game.SelectedShip.Simulation.MajorInfluenceBody.GetVelocity(Game.Simulation.Time);
+            var orbit = Solve.KeplarOrbit(pos, vel, Game.SelectedShip.Simulation.MajorInfluenceBody.Mass, Game.Simulation.Time);
             if (orbit.Type == OrbitType.Elliptical && orbit.Eccentricity < .2f)
             {
                 inPlanetOrbit = true;

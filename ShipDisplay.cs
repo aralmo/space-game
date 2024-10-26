@@ -1,4 +1,4 @@
-public static class ShipVisuals
+public static class ShipDisplay
 {
 
     public static unsafe void Run()
@@ -11,7 +11,7 @@ public static class ShipVisuals
         SetTargetFPS(60);
         Shaders.Load();
         var fi = new FileInfo(shipFile);
-        var ship = Vessel.LoadFromFile(shipFile);
+        var ship = ShipModel.LoadFromFile(shipFile);
         Camera.FreeOrbit();
         while (!WindowShouldClose())
         {
@@ -39,14 +39,14 @@ public static class ShipVisuals
             {
                 current = (current - 1 + ships.Length) % ships.Length;
                 shipFile = $"gamedata/ships/{ships[current]}.json";
-                ship = Vessel.LoadFromFile(shipFile);
+                ship = ShipModel.LoadFromFile(shipFile);
             }
 
             if (DrawUI.DrawButton(posXRightButton, posY, buttonWidth, buttonHeight, Color.LightGray, Color.Black, ">"))
             {
                 current = (current + 1) % ships.Length;
                 shipFile = $"gamedata/ships/{ships[current]}.json";
-                ship = Vessel.LoadFromFile(shipFile);
+                ship = ShipModel.LoadFromFile(shipFile);
             }
 
             EndDrawing();
@@ -54,16 +54,16 @@ public static class ShipVisuals
             if (f2.LastWriteTimeUtc > fi.LastWriteTimeUtc && (DateTime.UtcNow - f2.LastWriteTimeUtc).TotalSeconds > .2)
             {
                 fi = f2;
-                ship = Vessel.LoadFromFile(shipFile);
+                ship = ShipModel.LoadFromFile(shipFile);
             }
         }
 
         Shaders.Unload();
-        ShipModels.Unload();
+        Ship3DModels.Unload();
         CloseWindow();
     }
 
-    private static unsafe void DrawHangarLines(Vessel ship)
+    private static unsafe void DrawHangarLines(ShipModel ship)
     {
         if (ship.hangars == null) return;
         foreach (var hangar in ship.hangars)
@@ -72,7 +72,7 @@ public static class ShipVisuals
         }
     }
 
-    private static void ControlAnimations(Vessel ship)
+    private static void ControlAnimations(ShipModel ship)
     {
         DrawText("Animations", 10, 10, 20, Color.RayWhite);
         if (ship.Animations == null) return;

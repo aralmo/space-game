@@ -18,7 +18,7 @@ public class PlanningView : GameView
     }
     internal static unsafe void DrawPredictedManeuver(bool allowControl = true)
     {
-        var shipPrediction = Game.PlayerShip.Prediction;
+        var shipPrediction = Game.SelectedShip.Prediction;
         var predictionDisplay = shipPrediction.Points.Where(p => p.Time >= Game.Simulation.Time).Decimate(400).ToArray();
         var mouse_position = GetMousePosition();
         float distanceToMouse = float.MaxValue;
@@ -86,7 +86,7 @@ public class PlanningView : GameView
             {
                 foreach (var encounter in shipPrediction.ClosestEncounters.Where(e => e.obj is StationaryOrbitObject))
                 {
-                    var inf = Game.PlayerShip.DynamicSimulation.MajorInfluenceBody;
+                    var inf = Game.SelectedShip.Simulation.MajorInfluenceBody;
                     if (inf != null)
                     {
                         if (inf.InHierarchy(encounter.obj)) continue;
@@ -180,7 +180,7 @@ public class PlanningView : GameView
             : point.Position;
     private static unsafe void ManeuverControls()
     {
-        var shipPrediction = Game.PlayerShip.Prediction;
+        var shipPrediction = Game.SelectedShip.Prediction;
         var maneuver = shipPrediction.Maneuvers.Where(m => m.Time >= Game.Simulation.Time).LastOrDefault();
         if (maneuver == null) return;
         if (IsKeyPressed(KeyboardKey.Backspace))

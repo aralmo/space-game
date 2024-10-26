@@ -7,7 +7,7 @@ public class OrbitingCamera : ICameraController
     private float cameraDistance;
     bool isDynamicTarget = false;
     OrbitingObject? TargetBody { get; set; }
-    DynamicSimulation? TargetDynamic { get; set; }
+    Transform? TargetDynamic { get; set; }
     public OrbitingCamera(OrbitingObject? target = null, (float x, float y) initialAngle = default, Simulation? simulation = null)
     {
         var distance = DistanceFor(target);
@@ -50,7 +50,7 @@ public class OrbitingCamera : ICameraController
         this.TargetBody = target;
         isDynamicTarget = false;
     }
-    public OrbitingCamera SetTarget(DynamicSimulation target)
+    public OrbitingCamera SetTarget(Transform target)
     {
         this.TargetDynamic = target;
         isDynamicTarget = true;

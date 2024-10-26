@@ -1,18 +1,19 @@
 using System.Text.Json;
 
-public class Vessel : Transform
+public class ShipModel : Transform
 {
     public string[] Animations { get; set; }
-    Transform[] transforms;
+    public Transform[] Transforms;
     public HangarModel[] hangars;
-    private Vessel() { }
-    public static Vessel LoadFromFile(string file)
+    private ShipModel() { }
+    public static ShipModel Load(string ship) => LoadFromFile($"gamedata/ships/{ship}.json");
+    public static ShipModel LoadFromFile(string file)
     {
         List<Transform> transforms = new();
         List<string> animations = new();
         var options = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IncludeFields = true };
         var data = JsonSerializer.Deserialize<ShipDataModel>(File.ReadAllText(file), options);
-        var vessel = new Vessel();
+        var vessel = new ShipModel();
 
         foreach (var v in data.Visuals)
         {
@@ -26,7 +27,7 @@ public class Vessel : Transform
                 }
                 transforms.Add(new ModelTransform()
                 {
-                    Model = ShipModels.Load(v.Model),
+                    Model = Ship3DModels.Load(v.Model),
                     Position = v.Position,
                     Parent = vessel,
                     Scale = v.Scale,
@@ -53,14 +54,14 @@ public class Vessel : Transform
         vessel.hangars = data.Hangars;
         vessel.Animations = animations.ToArray();
         vessel.Scale = data.Scale;
-        vessel.transforms = transforms.ToArray();
+        vessel.Transforms = transforms.ToArray();
         return vessel;
     }
     static IEnumerable<ShipAnimation> LoadAnimations(VisualModel v)
     {
         if (v.Animations.Any())
         {
-            var a = ShipModels.LoadAnimations(v.Model);
+            var a = Ship3DModels.LoadAnimations(v.Model);
             for (int i = 0; i < v.Animations.Length; i++)
             {
                 yield return new ShipAnimation()
@@ -72,24 +73,23 @@ public class Vessel : Transform
             }
         }
     }
-
     public void Draw3D()
     {
-        foreach (I3DDrawable d in transforms.Where(t => t is I3DDrawable))
+        foreach (I3DDrawable d in Transforms.Where(t => t is I3DDrawable))
         {
             d.Draw3D();
         }
     }
     public void Update()
     {
-        foreach (IUpdatable t in transforms.Where(t => t is IUpdatable))
+        foreach (IUpdatable t in Transforms.Where(t => t is IUpdatable))
         {
             t.Update();
         }
     }
     public void SwitchAnimation(string animation)
     {
-        foreach (ModelTransform mt in transforms.Where(t => t is ModelTransform))
+        foreach (ModelTransform mt in Transforms.Where(t => t is ModelTransform))
         {
             var match = mt.Animations.FirstOrDefault(a => a.Name == animation);
             if (match != null)

@@ -1,4 +1,4 @@
-public static class ShipModels
+public static class Ship3DModels
 {
     static List<Model> loaded = new List<Model>();
     public unsafe static Model Load(string name)
@@ -75,7 +75,7 @@ public static class ShipModels
             mesh.BoneWeights = boneWeights;
             mesh.AnimVertices = animVerticesPtr;
             mesh.AnimNormals = animNormals;
-
+            mesh.VertexCount = inmesh.VertexCount;
             var xplanen = new Vector3(1, 0, 0);
             var yplanen = new Vector3(0, 1, 0);
             var zplanen = new Vector3(0, 0, 1);

@@ -9,19 +9,3 @@ public abstract class GameView
     public virtual void Draw3D() { }
     public virtual void Update() { }
 }
-
-public class DockingView : GameView
-{
-    public override bool Running => Game.PlayerShip.Stationed != null;
-    public override void Enter()
-    {
-        base.Enter();
-        Camera.CinematicView(Game.PlayerShip);
-        Game.PlayerShip.EnginePlaying = false;
-    }
-    public override void Update()
-    {
-        base.Update();
-        Game.Simulation.Speed = 0;
-    }
-}

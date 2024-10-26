@@ -11,11 +11,10 @@ public static class VNext
         var background = new Background();
         Shaders.Load();
         SetupGame();
-        Camera.Orbit(Game.PlayerShip);
+        Camera.Orbit(Game.SelectedShip.Model);
         ulong iter = 0;
         GameView[] Views = [
             new DialogView(),
-            new DockingView(),
             new PlayTurnView(),
             new PlanningView(),
         ];
@@ -39,7 +38,11 @@ public static class VNext
             //full time updates
             Camera.Update();
             Game.Simulation.Update();
-            Game.PlayerShip.Update();
+            foreach (var ship in Game.Spaceships)
+            {
+                ship.Update();
+            }
+
             view.Update();
 
             //pre-3d 2d drawing
@@ -50,7 +53,10 @@ public static class VNext
 
             //3d drawing
             BeginMode3D(Camera.Current);
-            Game.PlayerShip.Draw3D();
+            foreach (var ship in Game.Spaceships)
+            {
+                ship.Draw3D();
+            }
             Game.Simulation.Draw3D(Camera.Current);
             view.Draw3D();
 
@@ -63,21 +69,25 @@ public static class VNext
         UnloadResources();
         CloseWindow();
     }
-
     private static unsafe void UnloadResources()
     {
         Icons.Unload();
         Shaders.Unload();
-        ShipModels.Unload();
+        Ship3DModels.Unload();
     }
-
     static void SetupGame()
     {
         var simulation = Test.DefaultSimulation();
-        var startVectors = ShipStartingVectors(simulation);
-        var ds = new DynamicSimulation(simulation, startVectors.pos, startVectors.vel);
         Game.Simulation = simulation;
-        Game.PlayerShip = new PlayerShip(simulation, ds, "ship1");
+        var startVectors = ShipStartingVectors(simulation);
+        var ds = new DynamicSimulation(startVectors.pos, startVectors.vel);
+        Game.Spaceships.Add(new Spaceship()
+        {
+            Simulation = ds,
+            Model = ShipModel.Load("pioneer"),
+            Owner = 0,
+            Prediction = new PathPrediction(Game.Simulation, ds)
+        });
     }
     static (Vector3D pos, Vector3D vel) ShipStartingVectors(Simulation sim)
     {

@@ -55,18 +55,17 @@ public class PathPrediction
         if (transferPoints.Length < 2)
         {
             var influence = significantPoint?.MajorInfluence;
-            var ship = Game.PlayerShip.DynamicSimulation;
             if (influence == null)
             {
                 influence = Game.Simulation.OrbitingBodies
                     .Where(o => o is CelestialBody)
-                    .MaxBy(o => Solve.Influence(ship.Position, o.GetPosition(Game.Simulation.Time), o.Mass))
+                    .MaxBy(o => Solve.Influence(dsim.Position, o.GetPosition(Game.Simulation.Time), o.Mass))
                     as CelestialBody;
             }
             if (influence != null)
             {
-                var sp = significantPoint?.Position ?? ship.Position;
-                var sv = significantPoint?.Velocity ?? ship.Velocity;
+                var sp = significantPoint?.Position ?? dsim.Position;
+                var sv = significantPoint?.Velocity ?? dsim.Velocity;
                 if (lastManeuver != null)
                 {
                     sv += lastManeuver.DeltaV;
@@ -126,11 +125,7 @@ public class PathPrediction
             {
                 lock (predictionLock)
                 {
-                    if (Game.PlayerShip?.DynamicSimulation != null
-                    && Game.PlayerShip?.Prediction != null)
-                    {
-                        Update();
-                    }
+                    Update();
                 }
                 Thread.Sleep((int)(1000f / TARGET_FPS));
             }

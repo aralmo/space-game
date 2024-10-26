@@ -23,7 +23,7 @@ public class StationaryOrbitObject : OrbitingObject
     {
         var stationary = new StationaryOrbitObject(time => parameters.PositionAtTime(time))
         {
-            Model = model != null ? ShipModels.Load(model) : null,
+            Model = model != null ? Ship3DModels.Load(model) : null,
             OrbitParameters = parameters,
             CentralBody = centralBody,
             OrbitPoints = (parameters.Type == OrbitType.Elliptical)
